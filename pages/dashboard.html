@@ -107,6 +107,37 @@
             // Lógica do Supabase vai aqui para preencher v-hoje, v-mes e v-ano
         }
         carregarFinanceiro();
+        async function registrarBoleto() {
+    const cliente = document.getElementById('f_cliente').value;
+    const valor = document.getElementById('f_valor').value;
+    const vencimento = document.getElementById('f_vencimento').value;
+
+    if (!cliente || !valor || !vencimento) {
+        alert("Por favor, preencha todos os campos!");
+        return;
+    }
+
+    const { data, error } = await supabaseCon
+        .from('FINANCEIRO')
+        .insert([
+            { 
+                cliente: cliente, 
+                valor: parseFloat(valor), 
+                vencimento: vencimento, 
+                status: 'PENDENTE' 
+            }
+        ]);
+
+    if (error) {
+        alert("Erro ao salvar: " + error.message);
+    } else {
+        alert("Boleto registrado com sucesso na Euro Diesel!");
+        // Limpa os campos após salvar
+        document.getElementById('f_cliente').value = '';
+        document.getElementById('f_valor').value = '';
+        document.getElementById('f_vencimento').value = '';
+    }
+}
     </script>
 </body>
 </html>
