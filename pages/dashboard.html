@@ -121,7 +121,6 @@
     }
 
     async function carregarFinanceiro() {
-        // Forçamos a seleção explícita das colunas para evitar erro de cache
         const { data: boletos, error } = await supabaseCon.from('FINANCEIRO').select('id, cliente, valor, vencimento, status').order('vencimento', { ascending: true });
         if (error) return console.error(error.message);
 
@@ -181,10 +180,12 @@
                 texto += content.items.map(item => item.str).join(" ");
             }
 
+            // EXTRAÇÃO DE VALOR
             const regexValor = /(?:\d{1,3}(?:\.\d{3})*,\d{2})/;
             const vAchado = texto.match(regexValor);
             if (vAchado) document.getElementById('f_valor').value = vAchado[0].replace('.', '').replace(',', '.');
 
+            // EXTRAÇÃO DE VENCIMENTO
             const regexData = /(\d{2}\/\d{2}\/\d{4})/g;
             const todasDatas = texto.match(regexData);
             if (todasDatas && todasDatas.length > 0) {
@@ -193,23 +194,23 @@
                 document.getElementById('f_vencimento').value = `${p[2]}-${p[1]}-${p[0]}`;
             }
 
-            // LIMPEZA DO NOME DO CLIENTE CORRIGIDA
-            if (texto.includes("Pagador")) {
-                let partePagador = texto.split("Pagador")[1].trim();
-                // Remove os cabeçalhos que apareceram no seu print
-                let nomeLimpo = partePagador.replace(/CPF|CNPJ|ENDERECO|CIDADE|UF|CEP|NOME|DO/gi, "").trim();
-                
-                if (nomeLimpo.toUpperCase().includes("ANDREIS")) {
-                    document.getElementById('f_cliente').value = "ANDREIS TRANSPORTES";
-                } else {
-                    const nomeExtraido = nomeLimpo.split(" ").slice(0, 4).join(" ");
-                    document.getElementById('f_cliente').value = nomeExtraido.replace(/[^a-zA-Z ]/g, "").trim().toUpperCase();
-                }
-            } else {
-                const palavras = texto.split(" ");
-                document.getElementById('f_cliente').value = palavras.find(p => p.length > 5 && p === p.toUpperCase()) || "VERIFICAR";
+            // LÓGICA DE LIMPEZA DE NOME (CORRIGIDA PARA NÃO PEGAR 'ENDERECO')
+            let nomeFinal = "VERIFICAR";
+            
+            if (texto.toUpperCase().includes("ANDREIS")) {
+                nomeFinal = "ANDREIS TRANSPORTES";
+            } else if (texto.includes("Pagador")) {
+                let r = texto.split("Pagador")[1] || "";
+                // Filtro para remover termos técnicos e cabeçalhos comuns de boletos
+                nomeFinal = r.replace(/CPF|CNPJ|ENDERECO|CIDADE|UF|CEP|NOME|DO|PAGADOR|RUA|AVENIDA|AV|[-./0-9]/gi, " ")
+                             .replace(/\s+/g, " ")
+                             .trim()
+                             .split(" ")
+                             .slice(0, 4)
+                             .join(" ");
             }
-
+            
+            document.getElementById('f_cliente').value = nomeFinal.toUpperCase();
             alert("IA Euro Diesel: Boleto processado!");
         };
         reader.readAsArrayBuffer(file);
@@ -220,24 +221,27 @@
         const v = document.getElementById('f_valor').value;
         const d = document.getElementById('f_vencimento').value;
 
-        if(!c || !v || !d) return alert("Preencha todos os campos!");
+        if(!c || !v || !d) return alert("Erro: Preencha todos os campos antes de salvar!");
 
-        const { error } = await supabaseCon.from('FINANCEIRO').insert([{ 
-            cliente: c, 
-            valor: parseFloat(v), 
-            vencimento: d, 
-            status: 'PENDENTE' 
-        }]);
+        try {
+            const { error } = await supabaseCon.from('FINANCEIRO').insert([{ 
+                cliente: c.toUpperCase(), 
+                valor: parseFloat(v), 
+                vencimento: d, 
+                status: 'PENDENTE' 
+            }]);
 
-        if (error) {
-            console.error(error);
-            alert("Erro ao salvar: " + error.message);
-        } else {
-            alert("Salvo com sucesso!");
+            if (error) throw error;
+
+            alert("Salvo com sucesso no banco de dados!");
             carregarFinanceiro();
+            // Limpar campos
             document.getElementById('f_cliente').value = "";
             document.getElementById('f_valor').value = "";
             document.getElementById('f_vencimento').value = "";
+        } catch (err) {
+            console.error("Detalhes do erro:", err);
+            alert("Falha ao registrar: " + (err.message || "Erro de conexão"));
         }
     }
 
