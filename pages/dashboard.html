@@ -2,41 +2,98 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>EURO DIESEL - Dashboard</title>
+    <title>EURO DIESEL - Dashboard Master</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../js/config.js"></script>
     <script>
-        // Se não tiver usuário logado, volta para o login
+        // Proteção de Sessão
         const logado = localStorage.getItem('usuario_logado');
         if (!logado) { window.location.href = '../index.html'; }
     </script>
     <style>
-        body { background: #0b0b0b; color: white; font-family: sans-serif; text-align: center; padding: 50px; }
-        .master-panel { border: 2px solid #d4af37; padding: 20px; border-radius: 10px; display: inline-block; }
-        h1 { color: #d4af37; }
-        button { background: #d4af37; border: none; padding: 10px; cursor: pointer; font-weight: bold; margin-top: 20px; }
+        body { background: #0b0b0b; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
+        h1 { color: #d4af37; text-align: center; text-transform: uppercase; letter-spacing: 2px; }
+        .grid-financeiro { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 30px; }
+        .card { background: #1a1a1a; border: 1px solid #d4af37; padding: 20px; border-radius: 8px; text-align: center; }
+        .card h3 { margin: 0; color: #aaa; font-size: 14px; }
+        .card .valor { font-size: 24px; color: #d4af37; font-weight: bold; margin-top: 10px; }
+        .btn-sair { background: #d4af37; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; border-radius: 5px; margin-top: 30px; }
+        .btn-sair:hover { background: #b8962e; }
     </style>
-    // Exemplo da lógica de varredura que vamos usar no JS
-async function carregarFluxoCaixa() {
-    const { data: boletos } = await supabaseCon
-        .from('FINANCEIRO')
-        .select('*')
-        .eq('status', 'PENDENTE');
-
-    // Varredura por períodos
-    const hoje = new Date().toISOString().split('T')[0];
-    const entradasHoje = boletos.filter(b => b.vencimento === hoje);
-    const entradasMes = boletos.filter(b => isMesAtual(b.vencimento));
-}
 </head>
 <body>
-    <div class="master-panel">
-        <h1>EURO DIESEL | MASTER</h1>
-        <p>Bem-vindo, <span id="user-name" style="color: #d4af37;"></span></p>
-        <button onclick="localStorage.clear(); window.location.href='../index.html';">SAIR</button>
+
+    <h1>EURO DIESEL | GESTÃO DE RECEBÍVEIS</h1>
+    <p style="text-align:center;">Bem-vindo, <span id="user-name" style="color: #d4af37; font-weight: bold;"></span></p>
+
+    <div class="grid-financeiro">
+        <div class="card">
+            <h3>ENTRADAS HOJE</h3>
+            <div id="hoje" class="valor">R$ 0,00</div>
+        </div>
+        <div class="card">
+            <h3>ESTA SEMANA</h3>
+            <div id="semana" class="valor">R$ 0,00</div>
+        </div>
+        <div class="card">
+            <h3>ESTE MÊS</h3>
+            <div id="mes" class="valor">R$ 0,00</div>
+        </div>
+        <div class="card">
+            <h3>PROJEÇÃO (12 MESES)</h3>
+            <div id="ano" class="valor">R$ 0,00</div>
+        </div>
     </div>
 
+    <center>
+        <button class="btn-sair" onclick="localStorage.clear(); window.location.href='../index.html';">SAIR DO SISTEMA</button>
+    </center>
+
     <script>
+        // Exibe nome do usuário logado
         document.getElementById('user-name').innerText = localStorage.getItem('usuario_logado');
+
+        async function carregarVarredura() {
+            // Busca boletos pendentes na tabela FINANCEIRO
+            const { data: boletos, error } = await supabaseCon
+                .from('FINANCEIRO')
+                .select('*')
+                .eq('status', 'PENDENTE');
+
+            if (error) {
+                console.error("Erro ao buscar boletos:", error);
+                return;
+            }
+
+            const agora = new Date();
+            let totalHoje = 0;
+            let totalSemana = 0;
+            let totalMes = 0;
+            let totalAno = 0;
+
+            boletos.forEach(b => {
+                const dataVenc = new Date(b.vencimento + "T00:00:00");
+                const valor = parseFloat(b.valor);
+
+                // Lógica de Varredura
+                if (b.vencimento === agora.toISOString().split('T')[0]) totalHoje += valor;
+                
+                // Soma se for do mês atual
+                if (dataVenc.getMonth() === agora.getMonth() && dataVenc.getFullYear() === agora.getFullYear()) totalMes += valor;
+
+                // Soma para os próximos 12 meses (ano)
+                totalAno += valor;
+            });
+
+            // Atualiza a tela com R$ formatado
+            document.getElementById('hoje').innerText = totalHoje.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'});
+            document.getElementById('semana').innerText = totalSemana.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'}); // Adicionar lógica de semana se necessário
+            document.getElementById('mes').innerText = totalMes.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'});
+            document.getElementById('ano').innerText = totalAno.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'});
+        }
+
+        // Inicia a varredura ao abrir a página
+        carregarVarredura();
     </script>
 </body>
 </html>
