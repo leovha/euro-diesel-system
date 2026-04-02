@@ -12,3 +12,26 @@ function verificarSessao() {
         window.location.href = '../index.html';
     }
 }
+async function entrar() {
+    const user = document.getElementById('user').value.toUpperCase();
+    const pass = document.getElementById('pass').value;
+
+    // Busca na tabela MAIÚSCULA que já tem a ZANE cadastrada
+    const { data, error } = await supabase
+        .from('USUARIOS') 
+        .select('*')
+        .eq('nome', user)
+        .eq('senha', pass)
+        .single();
+
+    if (error || !data) {
+        alert("Acesso Negado: Usuário ou Senha incorretos!");
+    } else {
+        // Salva que o usuário está logado e o nível dele
+        localStorage.setItem('usuario_logado', data.nome);
+        localStorage.setItem('nivel_acesso', data.nivel);
+        
+        alert("Bem-vindo(a), " + data.nome);
+        window.location.href = "pages/dashboard.html"; 
+    }
+}
