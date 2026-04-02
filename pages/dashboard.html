@@ -6,35 +6,23 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script> 
     <script src="../js/config.js"></script>
-    <style> ... </style>
-</head>
-    <meta charset="UTF-8">
-    <title>EURO DIESEL | MASTER SYSTEM</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="../js/config.js"></script>
+    
     <style>
         :root { --gold: #d4af37; --dark: #0b0b0b; --card: #161616; --red: #ff4444; }
         body { background: var(--dark); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; height: 100vh; overflow: hidden; }
-        
-        /* Menu Lateral Estilo Scania */
         .sidebar { width: 260px; background: var(--card); border-right: 1px solid #333; display: flex; flex-direction: column; padding: 20px; box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
         .sidebar h2 { color: var(--gold); text-align: center; font-size: 22px; margin-bottom: 30px; border-bottom: 2px solid var(--gold); padding-bottom: 10px; }
         .nav-btn { background: none; border: 1px solid transparent; color: #888; padding: 15px; text-align: left; cursor: pointer; font-size: 14px; font-weight: bold; text-transform: uppercase; transition: 0.3s; margin-bottom: 5px; border-radius: 4px; }
         .nav-btn:hover { color: var(--gold); background: #222; }
         .nav-btn.active { background: var(--gold); color: black; border-left: 5px solid white; }
-
-        /* Conteúdo Principal */
         .main-content { flex: 1; padding: 40px; overflow-y: auto; background: linear-gradient(135deg, #0b0b0b 0%, #1a1a1a 100%); }
-        .bloco { display: none; } /* Esconde por padrão */
+        .bloco { display: none; }
         .bloco.ativo { display: block; animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        /* Cartões de Varredura */
         .grid-financeiro { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 20px; }
         .card-master { background: rgba(255,255,255,0.03); border: 1px solid #333; padding: 30px; border-radius: 12px; text-align: center; border-bottom: 3px solid var(--gold); }
         .card-master h3 { font-size: 14px; color: #aaa; margin: 0; text-transform: uppercase; }
         .card-master .valor { font-size: 32px; color: var(--gold); font-weight: bold; margin-top: 15px; }
-
         .btn-logout { background: var(--red); color: white; border: none; padding: 12px; font-weight: bold; cursor: pointer; border-radius: 5px; margin-top: auto; }
     </style>
 </head>
@@ -47,12 +35,10 @@
         <button class="nav-btn" onclick="trocarBloco('vales', this)">Vales & Comissões</button>
         <button class="nav-btn" onclick="trocarBloco('usuarios', this)">Gestão de Usuários</button>
         <button class="nav-btn" onclick="trocarBloco('ia', this)">Relatórios IA</button>
-        
         <button class="btn-logout" onclick="sair()">SAIR DO SISTEMA</button>
     </nav>
 
     <main class="main-content">
-        
         <div id="dash" class="bloco ativo">
             <h1 style="border-left: 5px solid var(--gold); padding-left: 15px;">VARREDURA FINANCEIRA</h1>
             <div class="grid-financeiro">
@@ -63,167 +49,115 @@
         </div>
 
         <div id="boletos" class="bloco">
-    <h1 style="color: var(--gold);">LANÇAMENTO INTELIGENTE</h1>
-    
-    <div style="border: 2px dashed var(--gold); padding: 20px; text-align: center; margin-bottom: 20px; border-radius: 10px; background: rgba(212, 175, 55, 0.05);">
-        <p style="color: #aaa;">Arraste o PDF do Boleto aqui ou</p>
-        <input type="file" id="pdf_input" accept=".pdf" style="display: none;">
-        <button onclick="document.getElementById('pdf_input').click()" style="background: var(--gold); color: black; border: none; padding: 8px 15px; cursor: pointer; font-weight: bold; border-radius: 5px;">SELECIONAR PDF</button>
-    </div>
-
-    <div id="form-lançamento" style="background: #1a1a1a; padding: 20px; border-radius: 10px;">
-        <label>CLIENTE (IA Identificou):</label>
-        <input type="text" id="f_cliente" style="width: 100%; padding: 10px; margin: 10px 0; background: #000; color: white; border: 1px solid #333;">
-        
-        <label>VALOR (IA Identificou):</label>
-        <input type="text" id="f_valor" style="width: 100%; padding: 10px; margin: 10px 0; background: #000; color: white; border: 1px solid #333;">
-        
-        <label>VENCIMENTO:</label>
-        <input type="date" id="f_vencimento" style="width: 100%; padding: 10px; margin: 10px 0; background: #000; color: white; border: 1px solid #333;">
-        
-        <button onclick="registrarBoleto()" style="width: 100%; background: #28a745; color: white; border: none; padding: 15px; font-weight: bold; cursor: pointer; border-radius: 5px;">CONFIRMAR E SALVAR NO BANCO</button>
-    </div>
-</div>
-
-        <div id="vales" class="bloco">
-            <h1>VALES E COMISSÕES</h1>
-            <p>Controle de adiantamentos e porcentagens dos técnicos.</p>
+            <h1 style="color: var(--gold);">LANÇAMENTO INTELIGENTE</h1>
+            <div style="border: 2px dashed var(--gold); padding: 20px; text-align: center; margin-bottom: 20px; border-radius: 10px; background: rgba(212, 175, 55, 0.05);">
+                <p style="color: #aaa;">Arraste o PDF do Boleto aqui ou</p>
+                <input type="file" id="pdf_input" accept=".pdf" style="display: none;">
+                <button onclick="document.getElementById('pdf_input').click()" style="background: var(--gold); color: black; border: none; padding: 8px 15px; cursor: pointer; font-weight: bold; border-radius: 5px;">SELECIONAR PDF</button>
+            </div>
+            <div id="form-lançamento" style="background: #1a1a1a; padding: 20px; border-radius: 10px;">
+                <label>CLIENTE:</label>
+                <input type="text" id="f_cliente" style="width: 100%; padding: 10px; margin: 10px 0; background: #000; color: white; border: 1px solid #333;">
+                <label>VALOR:</label>
+                <input type="text" id="f_valor" style="width: 100%; padding: 10px; margin: 10px 0; background: #000; color: white; border: 1px solid #333;">
+                <label>VENCIMENTO:</label>
+                <input type="date" id="f_vencimento" style="width: 100%; padding: 10px; margin: 10px 0; background: #000; color: white; border: 1px solid #333;">
+                <button onclick="registrarBoleto()" style="width: 100%; background: #28a745; color: white; border: none; padding: 15px; font-weight: bold; cursor: pointer; border-radius: 5px;">CONFIRMAR E SALVAR NO BANCO</button>
+            </div>
         </div>
 
-        <div id="usuarios" class="bloco">
-            <h1>USUÁRIOS DO SISTEMA</h1>
-            <p>Gerenciamento de acessos (Zane, Eduardo, etc).</p>
-        </div>
-
+        <div id="vales" class="bloco"><h1>VALES E COMISSÕES</h1></div>
+        <div id="usuarios" class="bloco"><h1>USUÁRIOS</h1></div>
     </main>
 
     <script>
-    // ... funções trocarBloco, sair, carregarFinanceiro e registrarBoleto já estão aqui ...
-
-    // --- COLE A LÓGICA DE LEITURA ABAIXO DA registrarBoleto() ---
-
-    const pdfInput = document.getElementById('pdf_input');
-
-    pdfInput.addEventListener('change', async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = async function() {
-            const typedarray = new Uint8Array(this.result);
-            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
-            const pdf = await pdfjsLib.getDocument(typedarray).promise;
-            let textoCompleto = "";
-
-            for (let i = 1; i <= pdf.numPages; i++) {
-                const page = await pdf.getPage(i);
-                const content = await page.getTextContent();
-                textoCompleto += content.items.map(item => item.str).join(" ");
-            }
-            processarTextoIA(textoCompleto);
-        };
-        reader.readAsArrayBuffer(file);
-    });
-
-    function processarTextoIA(texto) {
-        // ... (resto do código da função que extrai valor, data e cliente)
-        alert("IA Euro Diesel: Dados extraídos! Verifique antes de confirmar.");
-    }
-
-    // Inicia a varredura ao carregar
-    carregarFinanceiro();
-</script>
-        // Configuração de Navegação
-function trocarBloco(id, botao) {
-    document.querySelectorAll('.bloco').forEach(b => b.classList.remove('ativo'));
-    document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('active'));
-    document.getElementById(id).classList.add('ativo');
-    botao.classList.add('active');
-}
-
-function sair() {
-    localStorage.clear();
-    window.location.href = '../index.html';
-}
-
-// --- VARREDURA FINANCEIRA REAL ---
-async function carregarFinanceiro() {
-    // Busca todos os boletos pendentes
-    const { data: boletos, error } = await supabaseCon
-        .from('FINANCEIRO')
-        .select('*')
-        .eq('status', 'PENDENTE');
-
-    if (error) {
-        console.error("Erro na varredura:", error.message);
-        return;
-    }
-
-    const agora = new Date();
-    const hojeIso = agora.toISOString().split('T')[0];
-    const mesAtual = agora.getMonth();
-    const anoAtual = agora.getFullYear();
-
-    let totalHoje = 0;
-    let totalMes = 0;
-    let totalAno = 0;
-
-    boletos.forEach(b => {
-        const valorNum = parseFloat(b.valor) || 0;
-        // Ajuste de data para evitar erro de fuso horário
-        const dataVenc = new Date(b.vencimento + "T00:00:00");
-
-        // Soma Hoje
-        if (b.vencimento === hojeIso) totalHoje += valorNum;
-        
-        // Soma Mês Atual
-        if (dataVenc.getMonth() === mesAtual && dataVenc.getFullYear() === anoAtual) {
-            totalMes += valorNum;
+        // 1. NAVEGAÇÃO
+        function trocarBloco(id, botao) {
+            document.querySelectorAll('.bloco').forEach(b => b.classList.remove('ativo'));
+            document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('active'));
+            document.getElementById(id).classList.add('ativo');
+            botao.classList.add('active');
         }
 
-        // Soma Geral (Próximos 12 meses)
-        totalAno += valorNum;
-    });
+        function sair() {
+            localStorage.clear();
+            window.location.href = '../index.html';
+        }
 
-    // Atualiza a tela com formatação de moeda R$
-    document.getElementById('v-hoje').innerText = totalHoje.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'});
-    document.getElementById('v-mes').innerText = totalMes.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'});
-    document.getElementById('v-ano').innerText = totalAno.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'});
-}
+        // 2. FINANCEIRO (VARREDURA)
+        async function carregarFinanceiro() {
+            const { data: boletos, error } = await supabaseCon.from('FINANCEIRO').select('*').eq('status', 'PENDENTE');
+            if (error) return console.error(error.message);
 
-// --- REGISTRO DE BOLETOS ---
-async function registrarBoleto() {
-    const cliente = document.getElementById('f_cliente').value;
-    const valor = document.getElementById('f_valor').value;
-    const vencimento = document.getElementById('f_vencimento').value;
+            const hojeIso = new Date().toISOString().split('T')[0];
+            const mesAtual = new Date().getMonth();
+            const anoAtual = new Date().getFullYear();
 
-    if (!cliente || !valor || !vencimento) {
-        alert("Preencha todos os campos para a Euro Diesel!");
-        return;
-    }
+            let tHoje = 0, tMes = 0, tAno = 0;
 
-    const { error } = await supabaseCon
-        .from('FINANCEIRO')
-        .insert([{ 
-            cliente: cliente, 
-            valor: parseFloat(valor), 
-            vencimento: vencimento, 
-            status: 'PENDENTE' 
-        }]);
+            boletos.forEach(b => {
+                const v = parseFloat(b.valor) || 0;
+                const d = new Date(b.vencimento + "T00:00:00");
+                if (b.vencimento === hojeIso) tHoje += v;
+                if (d.getMonth() === mesAtual && d.getFullYear() === anoAtual) tMes += v;
+                tAno += v;
+            });
 
-    if (error) {
-        alert("Erro ao salvar: " + error.message);
-    } else {
-        alert("Lançamento realizado com sucesso!");
-        // Limpa e atualiza a varredura na hora
-        document.getElementById('f_cliente').value = '';
-        document.getElementById('f_valor').value = '';
-        document.getElementById('f_vencimento').value = '';
-        carregarFinanceiro(); 
-    }
-}
+            document.getElementById('v-hoje').innerText = tHoje.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'});
+            document.getElementById('v-mes').innerText = tMes.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'});
+            document.getElementById('v-ano').innerText = tAno.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'});
+        }
 
-// Inicia a varredura assim que a página carrega
-carregarFinanceiro();</script>
+        // 3. IA - LEITURA DE PDF
+        const pdfInput = document.getElementById('pdf_input');
+        pdfInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async function() {
+                const typedarray = new Uint8Array(this.result);
+                pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+                const pdf = await pdfjsLib.getDocument(typedarray).promise;
+                let texto = "";
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const content = await page.getTextContent();
+                    texto += content.items.map(item => item.str).join(" ");
+                }
+                
+                // EXTRAÇÃO
+                const regexValor = /(?:\d{1,3}(?:\.\d{3})*,\d{2})/;
+                const regexData = /(\d{2}\/\d{2}\/\d{4})/;
+                const vAchado = texto.match(regexValor);
+                const dAchada = texto.match(regexData);
+
+                if (vAchado) document.getElementById('f_valor').value = vAchado[0].replace('.', '').replace(',', '.');
+                if (dAchada) {
+                    const p = dAchada[0].split('/');
+                    document.getElementById('f_vencimento').value = `${p[2]}-${p[1]}-${p[0]}`;
+                }
+                const palavras = texto.split(" ");
+                document.getElementById('f_cliente').value = palavras.find(p => p.length > 5 && p === p.toUpperCase()) || "VERIFICAR";
+                alert("IA Euro Diesel: Dados extraídos!");
+            };
+            reader.readAsArrayBuffer(file);
+        });
+
+        // 4. SALVAR NO BANCO
+        async function registrarBoleto() {
+            const c = document.getElementById('f_cliente').value;
+            const v = document.getElementById('f_valor').value;
+            const d = document.getElementById('f_vencimento').value;
+
+            const { error } = await supabaseCon.from('FINANCEIRO').insert([{ cliente: c, valor: parseFloat(v), vencimento: d, status: 'PENDENTE' }]);
+            if (error) alert("Erro: " + error.message);
+            else {
+                alert("Salvo com sucesso!");
+                carregarFinanceiro();
+            }
+        }
+
+        carregarFinanceiro();
+    </script>
 </body>
 </html>
