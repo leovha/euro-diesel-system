@@ -1,121 +1,259 @@
 <!DOCTYPE html>
-<html lang="PT-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EURO DIESEL | MASTER INTELLIGENCE</title>
-    
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
+    <title>Euro Diesel | Master Management System</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --GOLD: #C5A021; --BG: #050505; --CARD: #111111; --TEXT: #E0E0E0; --RED: #FF4D4D; --GREEN: #00FF88; }
-        * { text-transform: UPPERCASE; box-sizing: border-box; font-family: 'SANS-SERIF'; }
-        body { background: var(--BG); color: var(--TEXT); margin: 0; display: flex; height: 100vh; overflow: hidden; }
-        
-        #LOGIN-SCREEN { position: fixed; inset: 0; background: #000; display: flex; align-items: center; justify-content: center; z-index: 99999; }
-        .CARD-LOGIN { background: var(--CARD); border: 1px solid var(--GOLD); padding: 40px; border-radius: 20px; width: 350px; text-align: center; }
-        
-        nav { width: 280px; background: #080808; border-right: 1px solid #222; display: flex; flex-direction: column; padding: 25px; }
-        .NAV-ITEM { padding: 16px; margin: 5px 0; border-radius: 12px; cursor: pointer; display: flex; align-items: center; gap: 15px; color: #777; transition: 0.3s; }
-        .NAV-ITEM.ACTIVE { background: var(--GOLD); color: #000; font-weight: 900; }
-        
-        main { flex: 1; padding: 40px; overflow-y: auto; display: block; }
-        .VIEW { display: none; }
-        .VIEW.ACTIVE { display: block; }
-        
-        input, select { width: 100%; padding: 12px; margin: 10px 0; background: #000; border: 1px solid #333; color: #FFF; border-radius: 8px; }
-        button { background: var(--GOLD); border: none; padding: 12px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; }
-        
-        .GRID { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .CARD-DASH { background: var(--CARD); border: 1px solid #222; padding: 25px; border-radius: 20px; }
+        :root {
+            --primary-gold: #d4af37;
+            --dark-bg: #0a0a0b;
+            --card-bg: #16161a;
+            --text-main: #e0e0e0;
+            --accent-green: #2ecc71;
+            --accent-red: #e74c3c;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar Luxuosa */
+        nav {
+            width: 260px;
+            background-color: var(--card-bg);
+            border-right: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-gold);
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 2px solid var(--primary-gold);
+            padding-bottom: 10px;
+        }
+
+        .nav-item {
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+        }
+
+        .nav-item:hover {
+            background: rgba(212, 175, 55, 0.1);
+            color: var(--primary-gold);
+        }
+
+        .active {
+            background: var(--primary-gold) !important;
+            color: #000 !important;
+        }
+
+        /* Área Principal */
+        main {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .view { display: none; }
+        .view.active { display: block; }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #333;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+
+        .card h3 { color: var(--primary-gold); margin-top: 0; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: var(--card-bg);
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #333;
+        }
+
+        th { color: var(--primary-gold); }
+
+        button {
+            background: var(--primary-gold);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        button:hover { opacity: 0.8; }
+
+        input {
+            background: #222;
+            border: 1px solid #444;
+            color: white;
+            padding: 8px;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
 
-<div id="LOGIN-SCREEN">
-    <div class="CARD-LOGIN">
-        <h1 style="color: var(--GOLD); margin-bottom: 20px;">EURO DIESEL</h1>
-        <input type="text" id="USER_IN" placeholder="USUÁRIO">
-        <input type="password" id="PASS_IN" placeholder="SENHA">
-        <button onclick="AUTENTICAR()">ACESSAR SISTEMA</button>
-    </div>
-</div>
-
-<nav id="SIDEBAR" style="display: none;">
-    <div style="text-align: center; margin-bottom: 30px;">
-        <h2 style="color: var(--GOLD); margin: 0;">EURO DIESEL</h2>
-        <small id="USER_LOGADO" style="color: #555;"></small>
-    </div>
-    <div class="NAV-ITEM ACTIVE" onclick="TELA('DASH', this)"><i class="fas fa-chart-line"></i> DASHBOARD</div>
-    <div class="NAV-ITEM" onclick="TELA('OS', this)"><i class="fas fa-file-invoice"></i> ORDENS DE SERVIÇO</div>
-    <div class="NAV-ITEM" onclick="TELA('EQUIPE', this)"><i class="fas fa-users"></i> EQUIPE / VALES</div>
-    <div class="NAV-ITEM" onclick="TELA('CONFIG', this)"><i class="fas fa-user-shield"></i> GESTÃO ACESSO</div>
-    <div class="NAV-ITEM" onclick="location.reload()" style="margin-top: auto; color: var(--RED);"><i class="fas fa-sign-out-alt"></i> SAIR</div>
+<nav>
+    <div class="logo">EURO DIESEL</div>
+    <div class="nav-item active" onclick="showView('dashboard')">📊 Dashboard</div>
+    <div class="nav-item" onclick="showView('saidas')">📉 Saídas / Histórico</div>
+    <div class="nav-item" onclick="showView('entradas')">📈 Entradas / Receber</div>
+    <div class="nav-item" onclick="showView('colaboradores')">👥 Colaboradores</div>
+    <div class="nav-item" onclick="showView('perfil')">⚙️ Perfil / Acessos</div>
 </nav>
 
-<main id="MAIN-CONTENT" style="display: none;">
-    <div id="DASH" class="VIEW ACTIVE">
-        <h1>PAINEL EXECUTIVO</h1>
-        <div class="GRID">
-            <div class="CARD-DASH"><h3>FATURAMENTO</h3><div id="FAT_MES" style="color: var(--GREEN); font-size: 24px; font-weight: 900;">R$ 0,00</div></div>
-            <div class="CARD-DASH"><h3>COMISSÕES</h3><div style="color: var(--RED); font-size: 24px; font-weight: 900;">R$ 0,00</div></div>
+<main>
+    <div id="dashboard" class="view active">
+        <h1>Painel Master</h1>
+        <div class="card-grid">
+            <div class="card">
+                <h3>Saldo em Caixa</h3>
+                <h2 style="color: var(--accent-green);">R$ 45.200,00</h2>
+            </div>
+            <div class="card">
+                <h3>A Receber (Futuro)</h3>
+                <h2>R$ 12.850,00</h2>
+            </div>
+            <div class="card">
+                <h3>Contas a Pagar (Hoje)</h3>
+                <h2 style="color: var(--accent-red);">R$ 3.100,00</h2>
+            </div>
+        </div>
+        <div class="card">
+            <h3>Saúde Financeira da Euro Diesel</h3>
+            <canvas id="meuGrafico" height="100"></canvas>
         </div>
     </div>
 
-    <div id="OS" class="VIEW">
-        <h1>LANÇAR NOVA OS</h1>
-        <div class="CARD-DASH">
-            <input type="text" id="OS_NUM" placeholder="Nº OS">
-            <input type="text" id="OS_CLI" placeholder="CLIENTE">
-            <input type="number" id="OS_MO" placeholder="VALOR MÃO DE OBRA">
-            <button onclick="alert('FUNCIONALIDADE EM ATIVAÇÃO...')">SALVAR OS</button>
+    <div id="saidas" class="view">
+        <h1>Histórico de Saídas</h1>
+        <div class="card">
+            <button onclick="alert('Lançar Nova Saída')">+ Nova Saída</button>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Descrição</th>
+                        <th>Categoria</th>
+                        <th>Valor</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>02/04/2026</td><td>Peças Scania - Turbo</td><td>Insumos</td><td>R$ 4.500,00</td><td>Pago</td></tr>
+                    <tr><td>15/04/2026</td><td>Aluguel Galpão</td><td>Fixo</td><td>R$ 3.000,00</td><td>Futuro</td></tr>
+                </tbody>
+            </table>
         </div>
     </div>
 
-    <div id="EQUIPE" class="VIEW"><h1>GESTÃO DE EQUIPE</h1><p>EM DESENVOLVIMENTO...</p></div>
-    <div id="CONFIG" class="VIEW"><h1>GESTÃO DE ACESSOS</h1><p>EM DESENVOLVIMENTO...</p></div>
+    <div id="colaboradores" class="view">
+        <h1>Gestão de Equipe</h1>
+        <div class="card-grid">
+            <div class="card" onclick="verDetalhesFuncionario('Manoel')" style="cursor:pointer">
+                <h3>Manoel</h3>
+                <p>Comissão: 40% (M.O)</p>
+                <button>Ver Folha / Vales</button>
+            </div>
+            <div class="card" onclick="verDetalhesFuncionario('Zane')" style="cursor:pointer">
+                <h3>Zane</h3>
+                <p>Salário Fixo: R$ 2.500,00</p>
+                <button>Ver Vales</button>
+            </div>
+            <div class="card">
+                <h3>Leandro (Sócio)</h3>
+                <p>Pro-labore: R$ 15.000,00</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="perfil" class="view">
+        <h1>Configurações e Acessos</h1>
+        <div class="card">
+            <h3>Criar Novo Acesso (Login)</h3>
+            <input type="text" placeholder="Nome do Usuário">
+            <input type="password" placeholder="Senha Temporária">
+            <select style="background:#222; color:white; padding:8px;">
+                <option>Nível: Colaborador</option>
+                <option>Nível: Admin (Zane)</option>
+                <option>Nível: Master (Leandro/Rafael)</option>
+            </select>
+            <button>Gerar Acesso</button>
+        </div>
+    </div>
 </main>
 
 <script>
-    // CREDENCIAIS
-    const S_URL = 'https://nqpdhwdkpqjcmvxgaypm.supabase.co';
-    const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5xcGRod2RrcHFqY212eGdheXBtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxMzc4MTQsImV4cCI6MjA5MDcxMzgxNH0.oV-G2iGKOEzPUw0jGK9BL14_kx30UqjJ0wXu8xloZdw';
-    const _supabase = supabase.createClient(S_URL, S_KEY);
+    function showView(viewId) {
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        
+        document.getElementById(viewId).classList.add('active');
+        event.currentTarget.classList.add('active');
+    }
 
-    async function AUTENTICAR() {
-        const u = document.getElementById('USER_IN').value.toUpperCase().trim();
-        const p = document.getElementById('PASS_IN').value.trim();
+    function verDetalhesFuncionario(nome) {
+        alert("Abrindo painel detalhado de " + nome + ". Aqui você verá o histórico de Vales, Comissões acumuladas e Folha de Pagamento.");
+        // Aqui integraria a lógica de filtragem de dados
+    }
 
-        // ATALHO MASTER OBRIGATÓRIO
-        if (u === 'LEANDRO' && p === 'MASTER777') {
-            LIBERAR_SISTEMA('MASTER LEANDRO');
-            return;
+    // Gráfico de Exemplo
+    const ctx = document.getElementById('meuGrafico').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Jan', 'Fev', 'Mar', 'Abr'],
+            datasets: [{
+                label: 'Faturamento Líquido',
+                data: [35000, 42000, 38000, 45000],
+                borderColor: '#d4af37',
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { labels: { color: '#fff' } } },
+            scales: { y: { ticks: { color: '#fff' } }, x: { ticks: { color: '#fff' } } }
         }
-
-        // BUSCA NO BANCO
-        const { data, error } = await _supabase.from('USUARIOS').select('*').eq('USUARIO', u).eq('SENHA', p).maybeSingle();
-
-        if (data) {
-            LIBERAR_SISTEMA(data.USUARIO);
-        } else {
-            alert('ACESSO NEGADO! TENTE: LEANDRO / MASTER777');
-        }
-    }
-
-    function LIBERAR_SISTEMA(nome) {
-        document.getElementById('LOGIN-SCREEN').style.display = 'none';
-        document.getElementById('SIDEBAR').style.display = 'flex';
-        document.getElementById('MAIN-CONTENT').style.display = 'block';
-        document.getElementById('USER_LOGADO').innerText = nome;
-    }
-
-    function TELA(id, el) {
-        document.querySelectorAll('.VIEW').forEach(v => v.classList.remove('ACTIVE'));
-        document.querySelectorAll('.NAV-ITEM').forEach(n => n.classList.remove('ACTIVE'));
-        document.getElementById(id).classList.add('ACTIVE');
-        el.classList.add('ACTIVE');
-    }
+    });
 </script>
 
 </body>
