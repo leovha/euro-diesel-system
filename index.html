@@ -128,36 +128,48 @@
     let USER_DATA = null;
 
     async function AUTENTICAR() {
-    const U = document.getElementById('USER_IN').value.toUpperCase();
-    const P = document.getElementById('PASS_IN').value;
+        // PEGA O QUE FOI DIGITADO
+        const U_RAW = document.getElementById('USER_IN').value;
+        const P_RAW = document.getElementById('PASS_IN').value;
+        
+        const U = U_RAW.toUpperCase().trim(); // GARANTE MAIÚSCULO E SEM ESPAÇOS
+        const P = P_RAW.trim();
 
-    // ATALHO MASTER: SE VOCÊ DIGITAR LEANDRO E MASTER777, ELE ENTRA DIRETO
-    if (U === 'LEANDRO' && P === 'MASTER777') {
-        USER_DATA = { USUARIO: 'LEANDRO', NIVEL: 'MASTER' };
-        document.getElementById('LOGIN-SCREEN').style.display = 'NONE';
-        document.getElementById('USER_LOGADO').innerText = 'MASTER LEANDRO';
-        CARREGAR_SISTEMA();
-        return; // ENTRA DIRETO
+        console.log("TENTANDO ACESSO COM:", U);
+
+        // --- ATALHO DE EMERGÊNCIA MASTER ---
+        // SE O BANCO FALHAR, ISSO AQUI SEMPRE ENTRA
+        if (U === 'LEANDRO' && P === 'MASTER777') {
+            console.log("ACESSO MASTER LIBERADO PELO ATALHO");
+            USER_DATA = { USUARIO: 'LEANDRO', NIVEL: 'MASTER' };
+            document.getElementById('LOGIN-SCREEN').style.display = 'NONE';
+            document.getElementById('USER_LOGADO').innerText = 'MASTER LEANDRO';
+            CARREGAR_SISTEMA();
+            return; 
+        }
+
+        // --- CONSULTA AO SUPABASE ---
+        try {
+            const { data, error } = await supabaseClient
+                .from('USUARIOS')
+                .select('*')
+                .eq('USUARIO', U)
+                .eq('SENHA', P)
+                .maybeSingle(); // USANDO MAYBESINGLE PARA EVITAR ERRO DE TABELA VAZIA
+
+            if (data) {
+                USER_DATA = data;
+                document.getElementById('LOGIN-SCREEN').style.display = 'NONE';
+                document.getElementById('USER_LOGADO').innerText = data.USUARIO;
+                CARREGAR_SISTEMA();
+            } else {
+                alert('ACESSO NEGADO! USUÁRIO OU SENHA INCORRETOS.');
+            }
+        } catch (err) {
+            console.error("ERRO CRÍTICO:", err);
+            alert('ERRO DE CONEXÃO COM O BANCO DE DADOS.');
+        }
     }
-
-    // SE NÃO FOR O MASTER, ELE BUSCA NO BANCO
-    const { data, error } = await supabaseClient
-        .from('USUARIOS')
-        .select('*')
-        .eq('USUARIO', U)
-        .eq('SENHA', P)
-        .single();
-    
-    if(data) {
-        USER_DATA = data;
-        document.getElementById('LOGIN-SCREEN').style.display = 'NONE';
-        document.getElementById('USER_LOGADO').innerText = data.USUARIO;
-        CARREGAR_SISTEMA();
-    } else { 
-        alert('ACESSO NEGADO! VERIFIQUE O USUÁRIO NO SUPABASE.'); 
-    }
-}
-
     function TELA(ID) {
         document.querySelectorAll('.VIEW').forEach(v => v.classList.remove('ACTIVE'));
         document.querySelectorAll('.NAV-ITEM').forEach(n => n.classList.remove('ACTIVE'));
