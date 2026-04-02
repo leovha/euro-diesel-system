@@ -1,9 +1,14 @@
 // js/login.js
 async function entrar() {
-    const user = document.getElementById('user').value.toUpperCase();
-    const pass = document.getElementById('pass').value;
+    const userField = document.getElementById('user');
+    const passField = document.getElementById('pass');
 
-    // Busca na tabela MAIÚSCULA que já tem a ZANE cadastrada
+    if (!userField || !passField) return;
+
+    const user = userField.value.toUpperCase();
+    const pass = passField.value;
+
+    // Usando o supabaseClient que definimos no config.js
     const { data, error } = await supabaseClient
         .from('USUARIOS') 
         .select('*')
@@ -18,6 +23,7 @@ async function entrar() {
         localStorage.setItem('nivel_acesso', data.nivel);
         
         alert("Bem-vindo(a), " + data.nome);
+        // Após o login, ele vai tentar ir para a pasta pages
         window.location.href = "pages/dashboard.html"; 
     }
 }
