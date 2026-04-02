@@ -6,115 +6,125 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../js/config.js"></script>
     <style>
-        :root { --gold: #d4af37; --dark: #0b0b0b; --card: #161616; }
+        :root { --gold: #d4af37; --dark: #0b0b0b; --card: #161616; --green: #28a745; --red: #ff4444; }
         body { background: var(--dark); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 40px; }
-        .grid-ia { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .grid-ia { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 20px; }
         .card-ia { background: var(--card); border: 1px solid #333; padding: 25px; border-radius: 12px; border-bottom: 3px solid var(--gold); }
         .valor-ia { font-size: 28px; color: var(--gold); font-weight: bold; margin-top: 10px; }
-        .btn-voltar { background: #333; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 5px; margin-bottom: 20px; }
-        .btn-gerar { background: var(--gold); color: black; border: none; padding: 15px 30px; font-weight: bold; cursor: pointer; border-radius: 5px; width: 100%; margin-top: 20px; }
+        .btn-voltar { background: #333; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 5px; margin-bottom: 20px; font-weight: bold; }
+        .btn-gerar { background: var(--gold); color: black; border: none; padding: 18px; font-weight: bold; cursor: pointer; border-radius: 8px; width: 100%; font-size: 16px; transition: 0.3s; }
+        .btn-gerar:hover { background: #b8962e; transform: scale(1.01); }
+        .btn-gerar:disabled { background: #555; cursor: not-allowed; }
+        .insight-container { background: #1a1a1a; padding: 25px; border-radius: 12px; border: 1px solid #333; }
+        strong { color: var(--gold); }
     </style>
 </head>
 <body>
 
     <button class="btn-voltar" onclick="window.history.back()">← VOLTAR AO SISTEMA</button>
 
-    <h1 style="color: var(--gold); border-left: 5px solid var(--gold); padding-left: 15px;">RELATÓRIOS INTELIGENTES (IA)</h1>
+    <h1 style="color: var(--gold); border-left: 5px solid var(--gold); padding-left: 15px; margin-bottom: 30px;">
+        INTELIGÊNCIA DE NEGÓCIOS (IA)
+    </h1>
 
     <div class="grid-ia">
         <div class="card-ia">
-            <h3>PREVISÃO DE CAIXA (30 DIAS)</h3>
+            <h3>PREVISÃO DE ENTRADA</h3>
             <div id="ia-previsao" class="valor-ia">R$ 0,00</div>
         </div>
         <div class="card-ia">
-            <h3>ALERTAS DE VENCIMENTO</h3>
-            <div id="ia-alertas" class="valor-ia" style="color: #ff4444; font-size: 18px;">Nenhum alerta ativo</div>
+            <h3>PENDÊNCIAS CRÍTICAS</h3>
+            <div id="ia-alertas" class="valor-ia" style="color: var(--red);">R$ 0,00</div>
         </div>
     </div>
-    <div class="grid-ia" style="margin-top: 20px;">
-        <div class="card-ia" style="border-bottom-color: #28a745;">
-            <h3>TOTAL COMISSÕES A PAGAR</h3>
+
+    <div class="grid-ia">
+        <div class="card-ia" style="border-bottom-color: var(--green);">
+            <h3>ESTIMATIVA DE COMISSÕES</h3>
             <div id="ia-comissoes" class="valor-ia">R$ 0,00</div>
         </div>
-        <div class="card-ia" style="border-bottom-color: #ff4444;">
-            <h3>VALES TOTAIS (MÊS)</h3>
+        <div class="card-ia" style="border-bottom-color: var(--red);">
+            <h3>VALES LANÇADOS</h3>
             <div id="ia-vales-total" class="valor-ia">R$ 0,00</div>
         </div>
     </div>
 
-    <div style="margin-top: 30px; background: #1a1a1a; padding: 20px; border-radius: 10px; border: 1px solid #333;">
-        <h3 style="color: var(--gold); margin-top: 0;">ANÁLISE DE DESEMPENHO</h3>
-        <p id="ia-texto-analise" style="color: #ccc; line-height: 1.6;">
-            Aguardando processamento dos dados do banco para gerar insights...
+    <div class="insight-container">
+        <h3 style="color: var(--gold); margin-top: 0; display: flex; align-items: center;">
+            <span style="margin-right: 10px;">📊</span> ANÁLISE ESTRATÉGICA
+        </h3>
+        <p id="ia-texto-analise" style="color: #ccc; line-height: 1.8; font-size: 16px;">
+            Aguardando processamento dos dados para gerar insights financeiros...
         </p>
-        <button class="btn-gerar" onclick="gerarRelatorioIA()">PROCESSAR DADOS COM IA</button>
+        <button class="btn-gerar" onclick="gerarRelatorioIA()">PROCESSAR RELATÓRIO MASTER</button>
     </div>
 
     <script>
-        // A lógica do Passo 2 entrará aqui
         async function gerarRelatorioIA() {
-            alert("Iniciando varredura no banco de dados...");
-        }
-        async function gerarRelatorioIA() {
-        const btn = document.querySelector('.btn-gerar');
-        btn.innerText = "PROCESSANDO...";
-        btn.disabled = true;
+            const btn = document.querySelector('.btn-gerar');
+            btn.innerText = "SINCRONIZANDO BANCO DE DADOS...";
+            btn.disabled = true;
 
-        try {
-            // 1. BUSCAR BOLETOS PENDENTES NO SUPABASE
-            const { data: boletos, error: errB } = await supabaseCon
-                .from('FINANCEIRO')
-                .select('valor, vencimento')
-                .eq('status', 'PENDENTE');
+            try {
+                // 1. Coleta simultânea para maior velocidade
+                const [respFin, respVales] = await Promise.all([
+                    supabaseCon.from('FINANCEIRO').select('*').eq('status', 'PENDENTE'),
+                    supabaseCon.from('VALES').select('valor')
+                ]);
 
-            if (errB) throw errB;
+                if (respFin.error) throw respFin.error;
+                if (respVales.error) throw respVales.error;
 
-            // 2. CALCULAR PREVISÃO E ALERTAS
-            let totalReceber = 0;
-            let atrasados = 0;
-            const hoje = new Date();
-            hoje.setHours(0, 0, 0, 0); // Ajusta para comparar apenas a data
+                const boletos = respFin.data;
+                const vales = respVales.data;
 
-            boletos.forEach(b => {
-                const valor = parseFloat(b.valor) || 0;
-                totalReceber += valor;
+                // 2. Cálculos Financeiros
+                let totalEntrada = 0;
+                let totalAtrasado = 0;
+                const hoje = new Date();
+                hoje.setHours(0, 0, 0, 0);
 
-                // Converte a string de vencimento (AAAA-MM-DD) para objeto Date
-                const [ano, mes, dia] = b.vencimento.split('-');
-                const dataVenc = new Date(ano, mes - 1, dia);
+                boletos.forEach(b => {
+                    const v = parseFloat(b.valor) || 0;
+                    totalEntrada += v;
 
-                if (dataVenc < hoje) {
-                    atrasados++;
+                    const [ano, mes, dia] = b.vencimento.split('-');
+                    if (new Date(ano, mes - 1, dia) < hoje) totalAtrasado += v;
+                });
+
+                const totalVales = vales.reduce((acc, curr) => acc + (parseFloat(curr.valor) || 0), 0);
+                
+                // Regra de Negócio: Média ponderada das comissões (Manoel 40, Eduardo 35, Vitor 30)
+                const totalComissoes = totalEntrada * 0.35; 
+                const saldoLiquido = totalEntrada - totalComissoes - totalVales;
+
+                // 3. Atualização da Interface
+                const formatar = (v) => v.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' });
+
+                document.getElementById('ia-previsao').innerText = formatar(totalEntrada);
+                document.getElementById('ia-alertas').innerText = formatar(totalAtrasado);
+                document.getElementById('ia-comissoes').innerText = formatar(totalComissoes);
+                document.getElementById('ia-vales-total').innerText = formatar(totalVales);
+
+                // 4. Geração de Insight Contextual
+                let analiseHTML = `Com base nos lançamentos, sua receita bruta prevista é de <strong>${formatar(totalEntrada)}</strong>.<br>`;
+                
+                if (totalAtrasado > 0) {
+                    analiseHTML += `⚠️ <strong>ATENÇÃO:</strong> Existem ${formatar(totalAtrasado)} em boletos vencidos que precisam de cobrança imediata.<br>`;
                 }
-            });
 
-            // 3. ATUALIZAR A TELA COM OS DADOS REAIS
-            document.getElementById('ia-previsao').innerText = totalReceber.toLocaleString('pt-br', { 
-                style: 'currency', 
-                currency: 'BRL' 
-            });
-            
-            const campoAlerta = document.getElementById('ia-alertas');
-            const campoTexto = document.getElementById('ia-texto-analise');
+                analiseHTML += `💰 <strong>RESULTADO LÍQUIDO:</strong> Após comissões e vales, a sobra estimada no caixa é de <strong>${formatar(saldoLiquido)}</strong>.`;
 
-            if (atrasados > 0) {
-                campoAlerta.innerText = `${atrasados} BOLETOS VENCIDOS`;
-                campoAlerta.style.color = "#ff4444";
-                campoTexto.innerHTML = `<strong>INSIGHT IA:</strong> Identificamos ${atrasados} pendências atrasadas. Recomendamos priorizar a cobrança desses valores para não afetar o capital de giro da <strong>Euro Diesel</strong>.`;
-            } else {
-                campoAlerta.innerText = "TUDO EM DIA";
-                campoAlerta.style.color = "#28a745";
-                campoTexto.innerText = "Excelente! O fluxo de caixa está saudável e não há atrasos críticos detectados nos lançamentos atuais.";
+                document.getElementById('ia-texto-analise').innerHTML = analiseHTML;
+
+            } catch (error) {
+                console.error(error);
+                alert("Erro na Varredura: " + error.message);
+            } finally {
+                btn.innerText = "PROCESSAR RELATÓRIO MASTER";
+                btn.disabled = false;
             }
-
-        } catch (error) {
-            console.error(error);
-            alert("Erro ao processar dados: " + error.message);
-        } finally {
-            btn.innerText = "PROCESSAR DADOS COM IA";
-            btn.disabled = false;
         }
-    }
     </script>
 </body>
 </html>
