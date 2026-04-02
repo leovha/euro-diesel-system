@@ -56,9 +56,21 @@
         </div>
 
         <div id="boletos" class="bloco">
-            <h1>LANÇAMENTO DE BOLETOS</h1>
-            <p>Aqui colocaremos o formulário de entrada.</p>
-        </div>
+    <h1 style="color: var(--gold); border-bottom: 1px solid #333; padding-bottom: 10px;">NOVO LANÇAMENTO FINANCEIRO</h1>
+    
+    <div style="max-width: 500px; background: #1a1a1a; padding: 30px; border-radius: 12px; border: 1px solid #333; margin-top: 20px;">
+        <label style="display:block; margin-bottom: 8px; color: #888;">NOME DO CLIENTE / TRANSPORTADORA</label>
+        <input type="text" id="f_cliente" placeholder="Ex: Andreis Transportador" style="width: 100%; padding: 12px; margin-bottom: 20px; background: #0b0b0b; border: 1px solid #444; color: white; border-radius: 5px;">
+
+        <label style="display:block; margin-bottom: 8px; color: #888;">VALOR DO BOLETO (R$)</label>
+        <input type="number" id="f_valor" placeholder="0.00" step="0.01" style="width: 100%; padding: 12px; margin-bottom: 20px; background: #0b0b0b; border: 1px solid #444; color: white; border-radius: 5px;">
+
+        <label style="display:block; margin-bottom: 8px; color: #888;">DATA DE VENCIMENTO</label>
+        <input type="date" id="f_vencimento" style="width: 100%; padding: 12px; margin-bottom: 25px; background: #0b0b0b; border: 1px solid #444; color: white; border-radius: 5px;">
+
+        <button onclick="registrarBoleto()" style="width: 100%; background: var(--gold); color: black; border: none; padding: 15px; font-weight: bold; cursor: pointer; border-radius: 5px; text-transform: uppercase;">Confirmar Lançamento</button>
+    </div>
+</div>
 
         <div id="vales" class="bloco">
             <h1>VALES E COMISSÕES</h1>
