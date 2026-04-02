@@ -50,6 +50,21 @@
 
         <div id="boletos" class="bloco">
             <h1 style="color: var(--gold);">LANÇAMENTO INTELIGENTE</h1>
+            <h2 style="color: var(--gold); margin-top: 40px;">BOLETOS AGUARDANDO PAGAMENTO</h2>
+<div style="background: #1a1a1a; padding: 20px; border-radius: 10px;">
+    <table style="width: 100%; color: white; border-collapse: collapse;">
+        <thead>
+            <tr style="border-bottom: 2px solid var(--gold); text-align: left;">
+                <th style="padding: 10px;">CLIENTE</th>
+                <th>VALOR</th>
+                <th>VENCIMENTO</th>
+                <th>AÇÃO</th>
+            </tr>
+        </thead>
+        <tbody id="tabela-boletos">
+            </tbody>
+    </table>
+</div>
             <div style="border: 2px dashed var(--gold); padding: 20px; text-align: center; margin-bottom: 20px; border-radius: 10px; background: rgba(212, 175, 55, 0.05);">
                 <p style="color: #aaa;">Arraste o PDF do Boleto aqui ou</p>
                 <input type="file" id="pdf_input" accept=".pdf" style="display: none;">
