@@ -1,1 +1,14 @@
-
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>EURO DIESEL - Dashboard</title>
+    <script src="../js/config.js"></script>
+    <script>verificarSessao();</script>
+</head>
+<body style="background: #0b0b0b; color: white; font-family: sans-serif; padding: 50px;">
+    <h1 style="color: #d4af37;">EURO DIESEL | PAINEL MASTER</h1>
+    <p>Bem-vindo ao sistema de gestão mecatrônica.</p>
+    <button onclick="localStorage.clear(); window.location.href='../index.html';">SAIR</button>
+</body>
+</html>
