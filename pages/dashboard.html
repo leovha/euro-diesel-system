@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>EURO DIESEL - Dashboard</title>
+    <script src="../js/config.js"></script>
+    <script>
+        // Se não tiver usuário logado, volta para o login
+        const logado = localStorage.getItem('usuario_logado');
+        if (!logado) { window.location.href = '../index.html'; }
+    </script>
+    <style>
+        body { background: #0b0b0b; color: white; font-family: sans-serif; text-align: center; padding: 50px; }
+        .master-panel { border: 2px solid #d4af37; padding: 20px; border-radius: 10px; display: inline-block; }
+        h1 { color: #d4af37; }
+        button { background: #d4af37; border: none; padding: 10px; cursor: pointer; font-weight: bold; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="master-panel">
+        <h1>EURO DIESEL | MASTER</h1>
+        <p>Bem-vindo, <span id="user-name" style="color: #d4af37;"></span></p>
+        <button onclick="localStorage.clear(); window.location.href='../index.html';">SAIR</button>
+    </div>
+
+    <script>
+        document.getElementById('user-name').innerText = localStorage.getItem('usuario_logado');
+    </script>
+</body>
+</html>
