@@ -1,1 +1,28 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EURO DIESEL - Login</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/config.js"></script>
+    <style>
+        body { background: #0b0b0b; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .login-card { background: #1a1a1a; padding: 30px; border-radius: 10px; border-top: 4px solid #d4af37; width: 300px; text-align: center; }
+        input { width: 100%; padding: 10px; margin: 10px 0; background: #333; border: 1px solid #444; color: white; border-radius: 5px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background: #d4af37; border: none; color: black; font-weight: bold; cursor: pointer; border-radius: 5px; }
+        button:hover { background: #b8962e; }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <h2 style="color: #d4af37;">EURO DIESEL</h2>
+        <p>Acesso ao Sistema</p>
+        <input type="text" id="user" placeholder="Usuário">
+        <input type="password" id="pass" placeholder="Senha">
+        <button onclick="entrar()">ENTRAR</button>
+    </div>
 
+    <script src="js/login.js"></script>
+</body>
+</html>
