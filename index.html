@@ -128,17 +128,35 @@
     let USER_DATA = null;
 
     async function AUTENTICAR() {
-        const U = document.getElementById('USER_IN').value.toUpperCase();
-        const P = document.getElementById('PASS_IN').value;
-        const { data } = await supabaseClient.from('USUARIOS').select('*').eq('USUARIO', U).eq('SENHA', P).single();
-        
-        if(data) {
-            USER_DATA = data;
-            document.getElementById('LOGIN-SCREEN').style.display = 'NONE';
-            document.getElementById('USER_LOGADO').innerText = data.USUARIO;
-            CARREGAR_SISTEMA();
-        } else { alert('ACESSO NEGADO!'); }
+    const U = document.getElementById('USER_IN').value.toUpperCase();
+    const P = document.getElementById('PASS_IN').value;
+
+    // ATALHO MASTER: SE VOCÊ DIGITAR LEANDRO E MASTER777, ELE ENTRA DIRETO
+    if (U === 'LEANDRO' && P === 'MASTER777') {
+        USER_DATA = { USUARIO: 'LEANDRO', NIVEL: 'MASTER' };
+        document.getElementById('LOGIN-SCREEN').style.display = 'NONE';
+        document.getElementById('USER_LOGADO').innerText = 'MASTER LEANDRO';
+        CARREGAR_SISTEMA();
+        return; // ENTRA DIRETO
     }
+
+    // SE NÃO FOR O MASTER, ELE BUSCA NO BANCO
+    const { data, error } = await supabaseClient
+        .from('USUARIOS')
+        .select('*')
+        .eq('USUARIO', U)
+        .eq('SENHA', P)
+        .single();
+    
+    if(data) {
+        USER_DATA = data;
+        document.getElementById('LOGIN-SCREEN').style.display = 'NONE';
+        document.getElementById('USER_LOGADO').innerText = data.USUARIO;
+        CARREGAR_SISTEMA();
+    } else { 
+        alert('ACESSO NEGADO! VERIFIQUE O USUÁRIO NO SUPABASE.'); 
+    }
+}
 
     function TELA(ID) {
         document.querySelectorAll('.VIEW').forEach(v => v.classList.remove('ACTIVE'));
