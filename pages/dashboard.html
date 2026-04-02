@@ -100,28 +100,51 @@
     }
 
     // 2. FINANCEIRO (VARREDURA)
-    async function carregarFinanceiro() {
-        const { data: boletos, error } = await supabaseCon.from('FINANCEIRO').select('*').eq('status', 'PENDENTE');
-        if (error) return console.error(error.message);
+    // Carrega os boletos e preenche a tabela
+async function carregarFinanceiro() {
+    const { data: boletos, error } = await supabaseCon.from('FINANCEIRO').select('*').order('vencimento', { ascending: true });
+    if (error) return console.error(error.message);
 
-        const hojeIso = new Date().toISOString().split('T')[0];
-        const mesAtual = new Date().getMonth();
-        const anoAtual = new Date().getFullYear();
+    const tabela = document.getElementById('tabela-boletos');
+    tabela.innerHTML = ""; // Limpa a tabela antes de carregar
 
-        let tHoje = 0, tMes = 0, tAno = 0;
+    let tHoje = 0, tMes = 0, tAno = 0;
+    const hojeIso = new Date().toISOString().split('T')[0];
 
-        boletos.forEach(b => {
-            const v = parseFloat(b.valor) || 0;
-            const d = new Date(b.vencimento + "T00:00:00");
-            if (b.vencimento === hojeIso) tHoje += v;
-            if (d.getMonth() === mesAtual && d.getFullYear() === anoAtual) tMes += v;
-            tAno += v;
-        });
+    boletos.forEach(b => {
+        const v = parseFloat(b.valor) || 0;
+        // Atualiza os cards do topo
+        if (b.vencimento === hojeIso) tHoje += v;
+        tAno += v;
 
-        document.getElementById('v-hoje').innerText = tHoje.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'});
-        document.getElementById('v-mes').innerText = tMes.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'});
-        document.getElementById('v-ano').innerText = tAno.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'});
+        // Cria a linha da tabela
+        tabela.innerHTML += `
+            <tr style="border-bottom: 1px solid #333;">
+                <td style="padding: 10px;">${b.cliente}</td>
+                <td style="color: var(--gold);">R$ ${v.toFixed(2)}</td>
+                <td>${b.vencimento.split('-').reverse().join('/')}</td>
+                <td>
+                    <button onclick="removerBoleto('${b.id}')" style="background: var(--red); color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px;">EXCLUIR</button>
+                </td>
+            </tr>
+        `;
+    });
+
+    document.getElementById('v-hoje').innerText = tHoje.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'});
+    document.getElementById('v-ano').innerText = tAno.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'});
+}
+
+// Função para deletar boleto do banco
+async function removerBoleto(id) {
+    if (confirm("Deseja realmente remover este boleto?")) {
+        const { error } = await supabaseCon.from('FINANCEIRO').delete().eq('id', id);
+        if (error) alert("Erro ao excluir: " + error.message);
+        else {
+            alert("Boleto removido!");
+            carregarFinanceiro(); // Atualiza a lista na hora
+        }
     }
+}
 
     // 3. IA - LEITURA DE PDF (VERSÃO CORRIGIDA)
     const pdfInput = document.getElementById('pdf_input');
