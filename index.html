@@ -159,7 +159,18 @@
         document.getElementById(viewId).classList.add('active');
         document.getElementById('btn-' + viewId).classList.add('active');
     }
+// EXEMPLO DE COMO SALVAR TUDO EM MAIÚSCULO NO SUPABASE
+async function SALVAR_DADOS() {
+    const INPUT_USUARIO = document.getElementById('USER').value.toUpperCase(); // FORÇA MAIÚSCULO
+    const INPUT_CLIENTE = document.getElementById('CLIENTE').value.toUpperCase(); // FORÇA MAIÚSCULO
 
+    const { data, error } = await supabase
+        .from('ORDENS_SERVICO')
+        .insert([{ 
+            CLIENTE: INPUT_CLIENTE, 
+            USUARIO: INPUT_USUARIO 
+        }]);
+}
     // Lógica de Login
     function login() {
         // Por enquanto simulado, depois conectamos ao Supabase
