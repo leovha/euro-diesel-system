@@ -6,111 +6,184 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
     <style>
-        :root { --GOLD: #C5A021; --BG: #050505; --CARD: #111111; --TEXT: #E0E0E0; }
-        * { text-transform: uppercase; box-sizing: border-box; font-family: 'INTER', SANS-SERIF; }
+        :root { --GOLD: #C5A021; --BG: #050505; --CARD: #111111; --TEXT: #E0E0E0; --RED: #FF4D4D; --GREEN: #00FF88; }
+        * { text-transform: UPPERCASE; box-sizing: border-box; font-family: 'INTER', SANS-SERIF; }
         body { background: var(--BG); color: var(--TEXT); margin: 0; display: flex; height: 100VH; overflow: hidden; }
         
-        /* LOGIN */
-        #LOGIN-SCREEN { position: FIXED; INSET: 0; background: #000; display: FLEX; align-items: CENTER; justify-content: CENTER; z-index: 10000; }
-        .LOGIN-BOX { background: var(--CARD); padding: 40PX; border-radius: 20PX; border: 1PX SOLID var(--GOLD); text-align: CENTER; width: 320PX; }
-        input { width: 100%; padding: 12PX; margin: 10PX 0; background: #000; border: 1PX SOLID #333; color: #FFF; border-radius: 8PX; }
-        
         /* SIDEBAR */
-        nav { width: 280PX; background: #080808; border-right: 1PX SOLID #222; display: NONE; flex-direction: COLUMN; padding: 25PX; }
+        nav { width: 280PX; background: #080808; border-right: 1PX SOLID #222; display: FLEX; flex-direction: COLUMN; padding: 25PX; }
         .NAV-ITEM { padding: 16PX; margin: 5PX 0; border-radius: 12PX; cursor: POINTER; display: FLEX; align-items: CENTER; gap: 15PX; color: #777; transition: 0.3S; }
+        .NAV-ITEM:hover { background: rgba(255,255,255,0.05); color: var(--GOLD); }
         .NAV-ITEM.ACTIVE { background: var(--GOLD); color: #000; font-weight: 900; }
 
         /* MAIN */
-        main { flex: 1; padding: 40PX; overflow-y: AUTO; display: NONE; }
-        .VIEW { display: NONE; }
+        main { flex: 1; padding: 40PX; overflow-y: AUTO; }
+        .VIEW { display: NONE; animation: fadeIn 0.3s ease; }
         .VIEW.ACTIVE { display: BLOCK; }
-        .CARD { background: var(--CARD); border: 1PX SOLID #222; padding: 25PX; border-radius: 20PX; margin-bottom: 20PX; }
-        button { background: var(--GOLD); border: NONE; padding: 12PX 20PX; border-radius: 8PX; font-weight: BOLD; cursor: POINTER; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .GRID { display: GRID; grid-template-columns: REPEAT(AUTO-FIT, MINMAX(250PX, 1FR)); gap: 20PX; margin-bottom: 30PX; }
+        .CARD { background: var(--CARD); border: 1PX SOLID #222; padding: 25PX; border-radius: 20PX; }
+        .CARD h3 { font-size: 12PX; color: #555; margin: 0; }
+        .VALUE { font-size: 24PX; font-weight: 900; margin-top: 10PX; }
+
+        input, select { width: 100%; padding: 12PX; margin: 10PX 0; background: #000; border: 1PX SOLID #333; color: #FFF; border-radius: 8PX; }
+        button { background: var(--GOLD); border: NONE; padding: 12PX 20PX; border-radius: 8PX; font-weight: BOLD; cursor: POINTER; width: 100%; margin-top: 10PX; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20PX; }
+        th { text-align: LEFT; color: var(--GOLD); padding: 12PX; border-bottom: 1PX SOLID #333; }
+        td { padding: 12PX; border-bottom: 1PX SOLID #111; }
+
+        /* LOGIN OVERLAY */
+        #LOGIN-SCREEN { position: FIXED; INSET: 0; background: #000; display: FLEX; align-items: CENTER; justify-content: CENTER; z-index: 10000; }
     </style>
 </head>
 <body>
 
 <div id="LOGIN-SCREEN">
-    <div class="LOGIN-BOX">
+    <div class="CARD" style="width: 350PX; text-align: CENTER; border: 1PX SOLID var(--GOLD);">
         <h1 style="color: var(--GOLD)">EURO DIESEL</h1>
-        <input type="text" id="USER" placeholder="USUÁRIO">
-        <input type="password" id="PASS" placeholder="SENHA">
-        <button onclick="EFETUAR_LOGIN()" style="width: 100%">ENTRAR NO SISTEMA</button>
+        <input type="text" id="USER_IN" placeholder="USUÁRIO">
+        <input type="password" id="PASS_IN" placeholder="SENHA">
+        <button onclick="AUTENTICAR()">ACESSAR MASTER</button>
     </div>
 </div>
 
-<nav id="SIDEBAR">
-    <h2 style="color: var(--GOLD); text-align: CENTER;">EURO DIESEL</h2>
-    <div class="NAV-ITEM ACTIVE" onclick="MUDAR_TELA('DASH')"><i class="fas fa-chart-line"></i> PAINEL MASTER</div>
-    <div class="NAV-ITEM" onclick="MUDAR_TELA('OS')"><i class="fas fa-file-invoice"></i> ORDENS DE SERVIÇO</div>
-    <div class="NAV-ITEM" onclick="location.reload()" style="margin-top: AUTO;"><i class="fas fa-sign-out-alt"></i> SAIR</div>
+<nav>
+    <div style="text-align: CENTER; margin-bottom: 30PX;">
+        <h2 style="color: var(--GOLD); margin: 0;">EURO DIESEL</h2>
+        <small id="USER_LOGADO" style="color: #555;"></small>
+    </div>
+    <div class="NAV-ITEM ACTIVE" onclick="TELA('DASH')" id="M-DASH"><i class="fas fa-chart-line"></i> DASHBOARD</div>
+    <div class="NAV-ITEM" onclick="TELA('OS')" id="M-OS"><i class="fas fa-file-invoice"></i> ORDENS DE SERVIÇO</div>
+    <div class="NAV-ITEM" onclick="TELA('FINANCEIRO')" id="M-FIN"><i class="fas fa-coins"></i> FINANCEIRO / BOLETOS</div>
+    <div class="NAV-ITEM" onclick="TELA('EQUIPE')" id="M-EQP"><i class="fas fa-users"></i> EQUIPE / VALES</div>
+    <div class="NAV-ITEM" onclick="TELA('CONFIG')" id="M-CFG"><i class="fas fa-user-shield"></i> GESTÃO DE ACESSOS</div>
+    <div class="NAV-ITEM" onclick="location.reload()" style="margin-top: AUTO; color: var(--RED);"><i class="fas fa-sign-out-alt"></i> SAIR</div>
 </nav>
 
-<main id="CONTEUDO">
+<main>
     <div id="DASH" class="VIEW ACTIVE">
-        <h1>BEM-VINDO, MASTER LEANDRO</h1>
-        <div class="CARD">
-            <h3>RESUMO FINANCEIRO (SINCRO NUVEM)</h3>
-            <p id="INFO-DASH">CARREGANDO DADOS DO SUPABASE...</p>
+        <h1>PAINEL EXECUTIVO</h1>
+        <div class="GRID">
+            <div class="CARD"><h3>FATURAMENTO MENSAL</h3><div class="VALUE" style="color: var(--GREEN)" id="FAT_MES">R$ 0,00</div></div>
+            <div class="CARD"><h3>COMISSÕES A PAGAR</h3><div class="VALUE" style="color: var(--RED)" id="COM_MES">R$ 0,00</div></div>
+            <div class="CARD"><h3>LUCRO LÍQUIDO</h3><div class="VALUE" style="color: var(--GOLD)" id="LUC_MES">R$ 0,00</div></div>
         </div>
     </div>
 
     <div id="OS" class="VIEW">
-        <h1>ORDENS DE SERVIÇO</h1>
+        <h1>LANÇAR NOVA OS</h1>
         <div class="CARD">
-            <input type="text" id="OS_NUM" placeholder="Nº DA OS">
-            <input type="text" id="OS_CLIENTE" placeholder="CLIENTE">
-            <input type="number" id="OS_VALOR" placeholder="VALOR TOTAL (R$)">
-            <button onclick="SALVAR_OS_BANCO()">REGISTRAR OS NO SUPABASE</button>
+            <div class="GRID">
+                <input type="text" id="OS_NUM" placeholder="Nº OS">
+                <input type="text" id="OS_CLI" placeholder="CLIENTE">
+                <select id="OS_TEC"><option>SELECIONE O TÉCNICO</option></select>
+                <input type="number" id="OS_MO" placeholder="VALOR MÃO DE OBRA (R$)">
+            </div>
+            <button onclick="SALVAR_OS()">SALVAR ORDEM DE SERVIÇO</button>
+        </div>
+        <table id="TABELA_OS">
+            <thead><tr><th>OS</th><th>CLIENTE</th><th>TÉCNICO</th><th>M.O</th><th>STATUS</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div id="EQUIPE" class="VIEW">
+        <h1>GESTÃO DE VALES E COMISSÕES</h1>
+        <div class="CARD">
+            <h3>LANÇAR VALE PARA FUNCIONÁRIO</h3>
+            <div class="GRID">
+                <select id="VALE_FUNC"><option>SELECIONE O FUNCIONÁRIO</option></select>
+                <input type="number" id="VALE_VALOR" placeholder="VALOR DO VALE (R$)">
+                <input type="text" id="VALE_MOTIVO" placeholder="MOTIVO">
+            </div>
+            <button onclick="SALVAR_VALE()" style="background: var(--RED); color: #FFF;">REGISTRAR VALE</button>
+        </div>
+    </div>
+
+    <div id="CONFIG" class="VIEW">
+        <h1>GERAR SENHA E USUÁRIO</h1>
+        <div class="CARD">
+            <div class="GRID">
+                <input type="text" id="NEW_USER" placeholder="NOME DE USUÁRIO">
+                <input type="text" id="NEW_PASS" placeholder="SENHA INICIAL">
+                <select id="NEW_LEVEL">
+                    <option value="TECNICO">TÉCNICO</option>
+                    <option value="ADM">ADMINISTRATIVO (ZANE)</option>
+                    <option value="MASTER">ADM MASTER (SÓCIO)</option>
+                </select>
+                <input type="number" id="NEW_PERC" placeholder="% COMISSÃO (EX: 40)">
+            </div>
+            <button onclick="CRIAR_USUARIO()">CRIAR NOVO ACESSO</button>
         </div>
     </div>
 </main>
 
 <script>
-    // CONEXÃO REAL COM SEU SUPABASE
-    const SUPABASE_URL = 'https://nqpdhwdkpqjcmvxgaypm.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5xcGRod2RrcHFqY212eGdheXBtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxMzc4MTQsImV4cCI6MjA5MDcxMzgxNH0.oV-G2iGKOEzPUw0jGK9BL14_kx30UqjJ0wXu8xloZdw';
-    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const S_URL = 'https://nqpdhwdkpqjcmvxgaypm.supabase.co';
+    const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5xcGRod2RrcHFqY212eGdheXBtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxMzc4MTQsImV4cCI6MjA5MDcxMzgxNH0.oV-G2iGKOEzPUw0jGK9BL14_kx30UqjJ0wXu8xloZdw';
+    const supabaseClient = supabase.createClient(S_URL, S_KEY);
 
-    async function EFETUAR_LOGIN() {
-        const U = document.getElementById('USER').value.toUpperCase();
-        const P = document.getElementById('PASS').value;
+    let USER_DATA = null;
 
-        // BUSCA NA TABELA USUARIOS QUE VOCÊ CRIOU
-        const { data, error } = await _supabase
-            .from('USUARIOS')
-            .select('*')
-            .eq('USUARIO', U)
-            .eq('SENHA', P)
-            .single();
-
-        if (data) {
+    async function AUTENTICAR() {
+        const U = document.getElementById('USER_IN').value.toUpperCase();
+        const P = document.getElementById('PASS_IN').value;
+        const { data } = await supabaseClient.from('USUARIOS').select('*').eq('USUARIO', U).eq('SENHA', P).single();
+        
+        if(data) {
+            USER_DATA = data;
             document.getElementById('LOGIN-SCREEN').style.display = 'NONE';
-            document.getElementById('SIDEBAR').style.display = 'FLEX';
-            document.getElementById('CONTEUDO').style.display = 'BLOCK';
-        } else {
-            alert('ACESSO NEGADO! VERIFIQUE SEU USUÁRIO NA TABELA DO SUPABASE.');
-        }
+            document.getElementById('USER_LOGADO').innerText = data.USUARIO;
+            CARREGAR_SISTEMA();
+        } else { alert('ACESSO NEGADO!'); }
     }
 
-    async function SALVAR_OS_BANCO() {
-        const NUM = document.getElementById('OS_NUM').value.toUpperCase();
-        const CLI = document.getElementById('OS_CLIENTE').value.toUpperCase();
-        const VAL = document.getElementById('OS_VALOR').value;
-
-        const { error } = await _supabase
-            .from('ORDENS_SERVICO')
-            .insert([{ NUMERO_OS: NUM, CLIENTE: CLI, VALOR_MO: VAL, STATUS: 'FINALIZADA' }]);
-
-        if (error) alert('ERRO AO SALVAR: ' + error.message);
-        else alert('OS ' + NUM + ' SALVA COM SUCESSO NA NUVEM!');
-    }
-
-    function MUDAR_TELA(ID) {
+    function TELA(ID) {
         document.querySelectorAll('.VIEW').forEach(v => v.classList.remove('ACTIVE'));
+        document.querySelectorAll('.NAV-ITEM').forEach(n => n.classList.remove('ACTIVE'));
         document.getElementById(ID).classList.add('ACTIVE');
+        event.currentTarget.classList.add('ACTIVE');
+    }
+
+    async function CARREGAR_SISTEMA() {
+        // CARREGA LISTA DE TÉCNICOS NOS SELECTS
+        const { data: users } = await supabaseClient.from('USUARIOS').select('*');
+        const selects = [document.getElementById('OS_TEC'), document.getElementById('VALE_FUNC')];
+        selects.forEach(s => {
+            s.innerHTML = '<option>SELECIONE...</option>';
+            users.forEach(u => s.innerHTML += `<option value="${u.USUARIO}">${u.USUARIO}</option>`);
+        });
+        ATUALIZAR_DASH();
+    }
+
+    async function CRIAR_USUARIO() {
+        const U = document.getElementById('NEW_USER').value.toUpperCase();
+        const P = document.getElementById('NEW_PASS').value;
+        const L = document.getElementById('NEW_LEVEL').value;
+        const C = document.getElementById('NEW_PERC').value;
+
+        const { error } = await supabaseClient.from('USUARIOS').insert([{ USUARIO: U, SENHA: P, NIVEL: L, COMISSAO_PERCENT: C }]);
+        if(!error) { alert('USUÁRIO CRIADO!'); CARREGAR_SISTEMA(); }
+    }
+
+    async function SALVAR_OS() {
+        const obj = {
+            NUMERO_OS: document.getElementById('OS_NUM').value,
+            CLIENTE: document.getElementById('OS_CLI').value.toUpperCase(),
+            TECNICO: document.getElementById('OS_TEC').value,
+            VALOR_MO: document.getElementById('OS_MO').value
+        };
+        await supabaseClient.from('ORDENS_SERVICO').insert([obj]);
+        alert('OS SALVA!');
+        ATUALIZAR_DASH();
+    }
+
+    async function ATUALIZAR_DASH() {
+        const { data: oss } = await supabaseClient.from('ORDENS_SERVICO').select('*');
+        let total = 0; oss.forEach(o => total += Number(o.VALOR_MO));
+        document.getElementById('FAT_MES').innerText = 'R$ ' + total.toLocaleString();
     }
 </script>
 </body>
