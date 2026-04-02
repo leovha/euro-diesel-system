@@ -3,8 +3,8 @@ async function entrar() {
     const user = document.getElementById('user').value.toUpperCase();
     const pass = document.getElementById('pass').value;
 
-    // Buscando na tabela USUARIOS (Maiúsculo) onde está a ZANE
-    const { data, error } = await supabaseClient
+    // Usando 'db' e a tabela MAIÚSCULA
+    const { data, error } = await db
         .from('USUARIOS') 
         .select('*')
         .eq('nome', user)
