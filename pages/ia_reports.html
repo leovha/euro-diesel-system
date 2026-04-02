@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>EURO DIESEL | IA REPORTS</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/config.js"></script>
+    <style>
+        :root { --gold: #d4af37; --dark: #0b0b0b; --card: #161616; }
+        body { background: var(--dark); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 40px; }
+        .grid-ia { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .card-ia { background: var(--card); border: 1px solid #333; padding: 25px; border-radius: 12px; border-bottom: 3px solid var(--gold); }
+        .valor-ia { font-size: 28px; color: var(--gold); font-weight: bold; margin-top: 10px; }
+        .btn-voltar { background: #333; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 5px; margin-bottom: 20px; }
+        .btn-gerar { background: var(--gold); color: black; border: none; padding: 15px 30px; font-weight: bold; cursor: pointer; border-radius: 5px; width: 100%; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+    <button class="btn-voltar" onclick="window.history.back()">← VOLTAR AO SISTEMA</button>
+
+    <h1 style="color: var(--gold); border-left: 5px solid var(--gold); padding-left: 15px;">RELATÓRIOS INTELIGENTES (IA)</h1>
+
+    <div class="grid-ia">
+        <div class="card-ia">
+            <h3>PREVISÃO DE CAIXA (30 DIAS)</h3>
+            <div id="ia-previsao" class="valor-ia">R$ 0,00</div>
+        </div>
+        <div class="card-ia">
+            <h3>ALERTAS DE VENCIMENTO</h3>
+            <div id="ia-alertas" class="valor-ia" style="color: #ff4444; font-size: 18px;">Nenhum alerta ativo</div>
+        </div>
+    </div>
+
+    <div style="margin-top: 30px; background: #1a1a1a; padding: 20px; border-radius: 10px; border: 1px solid #333;">
+        <h3 style="color: var(--gold); margin-top: 0;">ANÁLISE DE DESEMPENHO</h3>
+        <p id="ia-texto-analise" style="color: #ccc; line-height: 1.6;">
+            Aguardando processamento dos dados do banco para gerar insights...
+        </p>
+        <button class="btn-gerar" onclick="gerarRelatorioIA()">PROCESSAR DADOS COM IA</button>
+    </div>
+
+    <script>
+        // A lógica do Passo 2 entrará aqui
+        async function gerarRelatorioIA() {
+            alert("Iniciando varredura no banco de dados...");
+        }
+    </script>
+</body>
+</html>
