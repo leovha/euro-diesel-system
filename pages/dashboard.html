@@ -238,14 +238,20 @@
 
             if (error) throw error;
 
-            alert("Salvo com sucesso!");
-            carregarFinanceiro();
+            alert("Salvo com sucesso no banco de dados!");
+
+            // --- INÍCIO DA LIMPEZA (SEM BAGUNÇAR O RESTO) ---
             document.getElementById('f_cliente').value = "";
             document.getElementById('f_valor').value = "";
             document.getElementById('f_vencimento').value = "";
+            document.getElementById('pdf_input').value = ""; // Limpa o seletor de arquivo para o próximo PDF
+            // --- FIM DA LIMPEZA ---
+
+            carregarFinanceiro();
+            
         } catch (err) {
             console.error(err);
-            alert("Erro ao salvar no banco. Verifique se a tabela 'FINANCEIRO' tem as colunas: cliente, valor, vencimento, status.");
+            alert("Erro ao salvar no banco. Verifique a conexão.");
         }
     }
 
