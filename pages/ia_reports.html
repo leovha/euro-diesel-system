@@ -61,71 +61,67 @@
 
     <script>
         async function gerarRelatorioIA() {
-        const btn = document.querySelector('.btn-gerar');
-        btn.innerText = "SINCRONIZANDO BANCO DE DADOS...";
-        btn.disabled = true;
+            const btn = document.querySelector('.btn-gerar');
+            btn.innerText = "SINCRONIZANDO BANCO DE DADOS...";
+            btn.disabled = true;
 
-        try {
-            // 1. Coleta simultânea com nomes de tabelas em minúsculo (Correção de Erro)
-            const [respFin, respVales] = await Promise.all([
-                supabaseCon.from('financeiro').select('*').eq('status', 'PENDENTE'),
-                supabaseCon.from('vales').select('valor, funcionario')
-            ]);
+            try {
+                // Tenta buscar na tabela 'FINANCEIRO' ou 'financeiro'
+                let respFin = await supabaseCon.from('FINANCEIRO').select('*').eq('status', 'PENDENTE');
+                if (respFin.error) respFin = await supabaseCon.from('financeiro').select('*').eq('status', 'PENDENTE');
 
-            if (respFin.error) throw respFin.error;
-            if (respVales.error) throw respVales.error;
+                // Tenta buscar na tabela 'VALES' ou 'vales'
+                let respVales = await supabaseCon.from('VALES').select('valor');
+                if (respVales.error) respVales = await supabaseCon.from('vales').select('valor');
 
-            const boletos = respFin.data;
-            const vales = respVales.data;
+                if (respFin.error || respVales.error) {
+                    throw new Error("Tabelas não encontradas no Supabase. Verifique se os nomes estão corretos.");
+                }
 
-            // 2. Cálculos Financeiros
-            let totalEntrada = 0;
-            let totalAtrasado = 0;
-            const hoje = new Date();
-            hoje.setHours(0, 0, 0, 0);
+                const boletos = respFin.data;
+                const vales = respVales.data;
 
-            boletos.forEach(b => {
-                const v = parseFloat(b.valor) || 0;
-                totalEntrada += v;
-                const [ano, mes, dia] = b.vencimento.split('-');
-                if (new Date(ano, mes - 1, dia) < hoje) totalAtrasado += v;
-            });
+                // Cálculos Financeiros
+                let totalEntrada = 0;
+                let totalAtrasado = 0;
+                const hoje = new Date();
+                hoje.setHours(0, 0, 0, 0);
 
-            // Soma de Vales Real
-            const totalVales = vales.reduce((acc, curr) => acc + (parseFloat(curr.valor) || 0), 0);
-            
-            // 3. Regra de Comissão Exata (Euro Diesel Protocol)
-            // Manoel: 40% | Eduardo: 35% | Vitor: 30%
-            const totalComissoes = totalEntrada * 0.35; // Mantido 35% como estimativa global de provisionamento
-            const saldoLiquido = totalEntrada - totalComissoes - totalVales;
+                boletos.forEach(b => {
+                    const v = parseFloat(b.valor) || 0;
+                    totalEntrada += v;
+                    const [ano, mes, dia] = b.vencimento.split('-');
+                    if (new Date(ano, mes - 1, dia) < hoje) totalAtrasado += v;
+                });
 
-            // 4. Atualização da Interface
-            const formatar = (v) => v.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' });
+                const totalVales = vales.reduce((acc, curr) => acc + (parseFloat(curr.valor) || 0), 0);
+                
+                // Regra de Negócio: Provisionamento de 35% para comissões (Manoel, Eduardo e Vitor)
+                const totalComissoes = totalEntrada * 0.35; 
+                const saldoLiquido = totalEntrada - totalComissoes - totalVales;
 
-            document.getElementById('ia-previsao').innerText = formatar(totalEntrada);
-            document.getElementById('ia-alertas').innerText = formatar(totalAtrasado);
-            document.getElementById('ia-comissoes').innerText = formatar(totalComissoes);
-            document.getElementById('ia-vales-total').innerText = formatar(totalVales);
+                // Atualização da Interface
+                const formatar = (v) => v.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' });
 
-            // 5. Insight Contextual
-            let analiseHTML = `Receita bruta prevista: <strong>${formatar(totalEntrada)}</strong>.<br>`;
-            
-            if (totalAtrasado > 0) {
-                analiseHTML += `⚠️ <strong>ALERTA:</strong> Há <strong>${formatar(totalAtrasado)}</strong> em valores vencidos.<br>`;
+                document.getElementById('ia-previsao').innerText = formatar(totalEntrada);
+                document.getElementById('ia-alertas').innerText = formatar(totalAtrasado);
+                document.getElementById('ia-comissoes').innerText = formatar(totalComissoes);
+                document.getElementById('ia-vales-total').innerText = formatar(totalVales);
+
+                document.getElementById('ia-texto-analise').innerHTML = `
+                    Receita bruta prevista: <strong>${formatar(totalEntrada)}</strong>.<br>
+                    Provisionamento de Comissões: <strong>${formatar(totalComissoes)}</strong>.<br>
+                    <strong>SALDO LIVRE ESTIMADO: ${formatar(saldoLiquido)}</strong>.
+                `;
+
+            } catch (error) {
+                console.error(error);
+                alert("Erro: " + error.message);
+            } finally {
+                btn.innerText = "PROCESSAR RELATÓRIO MASTER";
+                btn.disabled = false;
             }
-
-            analiseHTML += `💰 <strong>SALDO LIVRE ESTIMADO:</strong> <strong>${formatar(saldoLiquido)}</strong> (após comissões e vales).`;
-
-            document.getElementById('ia-texto-analise').innerHTML = analiseHTML;
-
-        } catch (error) {
-            console.error(error);
-            alert("Erro de conexão: Verifique se as tabelas 'financeiro' e 'vales' existem no Supabase.");
-        } finally {
-            btn.innerText = "PROCESSAR RELATÓRIO MASTER";
-            btn.disabled = false;
         }
-    }
     </script>
 </body>
 </html>
