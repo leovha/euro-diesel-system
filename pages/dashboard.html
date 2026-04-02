@@ -91,59 +91,97 @@
     </main>
 
     <script>
-        // Função que controla a visibilidade dos blocos
-        function trocarBloco(id, botao) {
-            // Esconde todos os blocos
-            document.querySelectorAll('.bloco').forEach(b => b.classList.remove('ativo'));
-            // Remove destaque dos botões
-            document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('active'));
-            
-            // Mostra o bloco clicado e destaca o botão
-            document.getElementById(id).classList.add('ativo');
-            botao.classList.add('active');
+        // Configuração de Navegação
+function trocarBloco(id, botao) {
+    document.querySelectorAll('.bloco').forEach(b => b.classList.remove('ativo'));
+    document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('active'));
+    document.getElementById(id).classList.add('ativo');
+    botao.classList.add('active');
+}
+
+function sair() {
+    localStorage.clear();
+    window.location.href = '../index.html';
+}
+
+// --- VARREDURA FINANCEIRA REAL ---
+async function carregarFinanceiro() {
+    // Busca todos os boletos pendentes
+    const { data: boletos, error } = await supabaseCon
+        .from('FINANCEIRO')
+        .select('*')
+        .eq('status', 'PENDENTE');
+
+    if (error) {
+        console.error("Erro na varredura:", error.message);
+        return;
+    }
+
+    const agora = new Date();
+    const hojeIso = agora.toISOString().split('T')[0];
+    const mesAtual = agora.getMonth();
+    const anoAtual = agora.getFullYear();
+
+    let totalHoje = 0;
+    let totalMes = 0;
+    let totalAno = 0;
+
+    boletos.forEach(b => {
+        const valorNum = parseFloat(b.valor) || 0;
+        // Ajuste de data para evitar erro de fuso horário
+        const dataVenc = new Date(b.vencimento + "T00:00:00");
+
+        // Soma Hoje
+        if (b.vencimento === hojeIso) totalHoje += valorNum;
+        
+        // Soma Mês Atual
+        if (dataVenc.getMonth() === mesAtual && dataVenc.getFullYear() === anoAtual) {
+            totalMes += valorNum;
         }
 
-        function sair() {
-            localStorage.clear();
-            window.location.href = '../index.html';
-        }
+        // Soma Geral (Próximos 12 meses)
+        totalAno += valorNum;
+    });
 
-        // Simulação de Varredura (Conecta com sua tabela FINANCEIRO)
-        async function carregarFinanceiro() {
-            // Lógica do Supabase vai aqui para preencher v-hoje, v-mes e v-ano
-        }
-        carregarFinanceiro();
-        async function registrarBoleto() {
+    // Atualiza a tela com formatação de moeda R$
+    document.getElementById('v-hoje').innerText = totalHoje.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'});
+    document.getElementById('v-mes').innerText = totalMes.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'});
+    document.getElementById('v-ano').innerText = totalAno.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'});
+}
+
+// --- REGISTRO DE BOLETOS ---
+async function registrarBoleto() {
     const cliente = document.getElementById('f_cliente').value;
     const valor = document.getElementById('f_valor').value;
     const vencimento = document.getElementById('f_vencimento').value;
 
     if (!cliente || !valor || !vencimento) {
-        alert("Por favor, preencha todos os campos!");
+        alert("Preencha todos os campos para a Euro Diesel!");
         return;
     }
 
-    const { data, error } = await supabaseCon
+    const { error } = await supabaseCon
         .from('FINANCEIRO')
-        .insert([
-            { 
-                cliente: cliente, 
-                valor: parseFloat(valor), 
-                vencimento: vencimento, 
-                status: 'PENDENTE' 
-            }
-        ]);
+        .insert([{ 
+            cliente: cliente, 
+            valor: parseFloat(valor), 
+            vencimento: vencimento, 
+            status: 'PENDENTE' 
+        }]);
 
     if (error) {
         alert("Erro ao salvar: " + error.message);
     } else {
-        alert("Boleto registrado com sucesso na Euro Diesel!");
-        // Limpa os campos após salvar
+        alert("Lançamento realizado com sucesso!");
+        // Limpa e atualiza a varredura na hora
         document.getElementById('f_cliente').value = '';
         document.getElementById('f_valor').value = '';
         document.getElementById('f_vencimento').value = '';
+        carregarFinanceiro(); 
     }
 }
-    </script>
+
+// Inicia a varredura assim que a página carrega
+carregarFinanceiro();</script>
 </body>
 </html>
