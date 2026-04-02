@@ -165,35 +165,26 @@
         console.log("DASHBOARD ATUALIZADO");
     }
     async function CRIAR_ACESSO() {
-    // Captura os valores dos campos
     const usuario = document.getElementById('N_USER').value;
     const senha = document.getElementById('N_PASS').value;
     const nivel = document.getElementById('N_NIVEL').value;
 
-    // Validação simples para não enviar vazio
     if (!usuario || !senha) {
-        alert("POR FAVOR, PREENCHA USUÁRIO E SENHA!");
+        alert("PREENCHA TUDO, CHEFE!");
         return;
     }
 
-    // Envia para a tabela 'USUARIOS' no Supabase
-    // Nota: Verifique se os nomes das colunas no seu banco são 'nome', 'senha' e 'nivel'
+    // ATENÇÃO: Usei 'USUARIOS' em maiúsculo para bater com seu print
     const { data, error } = await _SUPA
         .from('USUARIOS') 
-        .insert([
-            { 
-                nome: usuario, 
-                senha: senha, 
-                nivel: nivel 
-            }
-        ]);
+        .insert([{ nome: usuario, senha: senha, nivel: nivel }]);
 
     if (error) {
-        console.error('Erro ao cadastrar:', error);
-        alert('ERRO AO GERAR ACESSO: ' + error.message);
+        console.error('Erro:', error);
+        alert('ERRO: ' + error.message);
     } else {
-        alert('ACESSO PARA ' + usuario + ' GERADO COM SUCESSO!');
-        // Limpa os campos após o sucesso
+        alert('ACESSO CRIADO COM SUCESSO!');
+        // Limpa os campos
         document.getElementById('N_USER').value = '';
         document.getElementById('N_PASS').value = '';
     }
