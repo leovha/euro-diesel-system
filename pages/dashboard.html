@@ -71,114 +71,112 @@
     </main>
 
     <script>
-        // 1. NAVEGAÇÃO
-        function trocarBloco(id, botao) {
-            document.querySelectorAll('.bloco').forEach(b => b.classList.remove('ativo'));
-            document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('active'));
-            document.getElementById(id).classList.add('ativo');
-            botao.classList.add('active');
-        }
+    // 1. NAVEGAÇÃO
+    function trocarBloco(id, botao) {
+        document.querySelectorAll('.bloco').forEach(b => b.classList.remove('ativo'));
+        document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('active'));
+        document.getElementById(id).classList.add('ativo');
+        botao.classList.add('active');
+    }
 
-        function sair() {
-            localStorage.clear();
-            window.location.href = '../index.html';
-        }
+    function sair() {
+        localStorage.clear();
+        window.location.href = '../index.html';
+    }
 
-        // 2. FINANCEIRO (VARREDURA)
-        async function carregarFinanceiro() {
-            const { data: boletos, error } = await supabaseCon.from('FINANCEIRO').select('*').eq('status', 'PENDENTE');
-            if (error) return console.error(error.message);
+    // 2. FINANCEIRO (VARREDURA)
+    async function carregarFinanceiro() {
+        const { data: boletos, error } = await supabaseCon.from('FINANCEIRO').select('*').eq('status', 'PENDENTE');
+        if (error) return console.error(error.message);
 
-            const hojeIso = new Date().toISOString().split('T')[0];
-            const mesAtual = new Date().getMonth();
-            const anoAtual = new Date().getFullYear();
+        const hojeIso = new Date().toISOString().split('T')[0];
+        const mesAtual = new Date().getMonth();
+        const anoAtual = new Date().getFullYear();
 
-            let tHoje = 0, tMes = 0, tAno = 0;
+        let tHoje = 0, tMes = 0, tAno = 0;
 
-            boletos.forEach(b => {
-                const v = parseFloat(b.valor) || 0;
-                const d = new Date(b.vencimento + "T00:00:00");
-                if (b.vencimento === hojeIso) tHoje += v;
-                if (d.getMonth() === mesAtual && d.getFullYear() === anoAtual) tMes += v;
-                tAno += v;
-            });
-
-            document.getElementById('v-hoje').innerText = tHoje.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'});
-            document.getElementById('v-mes').innerText = tMes.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'});
-            document.getElementById('v-ano').innerText = tAno.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'});
-        }
-
-        // 3. IA - LEITURA DE PDF
-        const pdfInput = document.getElementById('pdf_input');
-        pdfInput.addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            // --- NOVA LÓGICA DE EXTRAÇÃO INTELIGENTE ---
-                
-                // 1. Acha o VALOR (ex: 520,00)
-                const regexValor = /(?:\d{1,3}(?:\.\d{3})*,\d{2})/;
-                const vAchado = texto.match(regexValor);
-                if (vAchado) document.getElementById('f_valor').value = vAchado[0].replace('.', '').replace(',', '.');
-
-                // 2. Acha o VENCIMENTO (procura a data mais distante no boleto)
-                const regexData = /(\d{2}\/\d{2}\/\d{4})/g;
-                const todasDatas = texto.match(regexData);
-                if (todasDatas && todasDatas.length > 0) {
-                    // Pega a última data encontrada (geralmente o vencimento)
-                    const dataVenc = todasDatas[todasDatas.length - 1];
-                    const p = dataVenc.split('/');
-                    document.getElementById('f_vencimento').value = `${p[2]}-${p[1]}-${p[0]}`;
-                }
-
-                // 3. Acha o CLIENTE (Ignora o seu nome e foca no Pagador)
-                if (texto.includes("Pagador")) {
-                    // Pega o texto logo após a palavra "Pagador"
-                    const partePagador = texto.split("Pagador")[1].trim();
-                    // Pega as primeiras 3 ou 4 palavras (ex: Andreis Transportes Ltda)
-                    const nomeExtraido = partePagador.split(" ").slice(0, 3).join(" ");
-                    document.getElementById('f_cliente').value = nomeExtraido.replace(/[^a-zA-Z ]/g, "").trim();
-                } else {
-                    // Se não achar a palavra "Pagador", usa o método antigo de palavras maiúsculas
-                    const palavras = texto.split(" ");
-                    document.getElementById('f_cliente').value = palavras.find(p => p.length > 5 && p === p.toUpperCase()) || "VERIFICAR";
-                }
-
-                alert("IA Euro Diesel: Dados extraídos com sucesso!");
-                
-                // EXTRAÇÃO
-                const regexValor = /(?:\d{1,3}(?:\.\d{3})*,\d{2})/;
-                const regexData = /(\d{2}\/\d{2}\/\d{4})/;
-                const vAchado = texto.match(regexValor);
-                const dAchada = texto.match(regexData);
-
-                if (vAchado) document.getElementById('f_valor').value = vAchado[0].replace('.', '').replace(',', '.');
-                if (dAchada) {
-                    const p = dAchada[0].split('/');
-                    document.getElementById('f_vencimento').value = `${p[2]}-${p[1]}-${p[0]}`;
-                }
-                const palavras = texto.split(" ");
-                document.getElementById('f_cliente').value = palavras.find(p => p.length > 5 && p === p.toUpperCase()) || "VERIFICAR";
-                alert("IA Euro Diesel: Dados extraídos!");
-            };
-            reader.readAsArrayBuffer(file);
+        boletos.forEach(b => {
+            const v = parseFloat(b.valor) || 0;
+            const d = new Date(b.vencimento + "T00:00:00");
+            if (b.vencimento === hojeIso) tHoje += v;
+            if (d.getMonth() === mesAtual && d.getFullYear() === anoAtual) tMes += v;
+            tAno += v;
         });
 
-        // 4. SALVAR NO BANCO
-        async function registrarBoleto() {
-            const c = document.getElementById('f_cliente').value;
-            const v = document.getElementById('f_valor').value;
-            const d = document.getElementById('f_vencimento').value;
+        document.getElementById('v-hoje').innerText = tHoje.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'});
+        document.getElementById('v-mes').innerText = tMes.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'});
+        document.getElementById('v-ano').innerText = tAno.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'});
+    }
 
-            const { error } = await supabaseCon.from('FINANCEIRO').insert([{ cliente: c, valor: parseFloat(v), vencimento: d, status: 'PENDENTE' }]);
-            if (error) alert("Erro: " + error.message);
-            else {
-                alert("Salvo com sucesso!");
-                carregarFinanceiro();
+    // 3. IA - LEITURA DE PDF (VERSÃO CORRIGIDA)
+    const pdfInput = document.getElementById('pdf_input');
+    pdfInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        
+        reader.onload = async function() {
+            const typedarray = new Uint8Array(this.result);
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+            
+            const pdf = await pdfjsLib.getDocument(typedarray).promise;
+            let texto = "";
+            for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const content = await page.getTextContent();
+                texto += content.items.map(item => item.str).join(" ");
             }
-        }
 
-        carregarFinanceiro();
-    </script>
+            // --- EXTRAÇÃO INTELIGENTE EURO DIESEL ---
+            
+            // Valor
+            const regexValor = /(?:\d{1,3}(?:\.\d{3})*,\d{2})/;
+            const vAchado = texto.match(regexValor);
+            if (vAchado) document.getElementById('f_valor').value = vAchado[0].replace('.', '').replace(',', '.');
+
+            // Vencimento (pega a última data do boleto)
+            const regexData = /(\d{2}\/\d{2}\/\d{4})/g;
+            const todasDatas = texto.match(regexData);
+            if (todasDatas && todasDatas.length > 0) {
+                const dataVenc = todasDatas[todasDatas.length - 1];
+                const p = dataVenc.split('/');
+                document.getElementById('f_vencimento').value = `${p[2]}-${p[1]}-${p[0]}`;
+            }
+
+            // Cliente (Foca no Pagador)
+            if (texto.includes("Pagador")) {
+                const partePagador = texto.split("Pagador")[1].trim();
+                const nomeExtraido = partePagador.split(" ").slice(0, 3).join(" ");
+                document.getElementById('f_cliente').value = nomeExtraido.replace(/[^a-zA-Z ]/g, "").trim().toUpperCase();
+            } else {
+                const palavras = texto.split(" ");
+                document.getElementById('f_cliente').value = palavras.find(p => p.length > 5 && p === p.toUpperCase()) || "VERIFICAR";
+            }
+
+            alert("IA Euro Diesel: Dados extraídos com sucesso!");
+        };
+        reader.readAsArrayBuffer(file);
+    });
+
+    // 4. SALVAR NO BANCO
+    async function registrarBoleto() {
+        const c = document.getElementById('f_cliente').value;
+        const v = document.getElementById('f_valor').value;
+        const d = document.getElementById('f_vencimento').value;
+
+        const { error } = await supabaseCon.from('FINANCEIRO').insert([{ cliente: c, valor: parseFloat(v), vencimento: d, status: 'PENDENTE' }]);
+        if (error) alert("Erro: " + error.message);
+        else {
+            alert("Salvo com sucesso!");
+            carregarFinanceiro();
+            // Limpa o formulário
+            document.getElementById('f_cliente').value = "";
+            document.getElementById('f_valor').value = "";
+            document.getElementById('f_vencimento').value = "";
+        }
+    }
+
+    carregarFinanceiro();
+</script>
 </body>
 </html>
