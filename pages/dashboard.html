@@ -121,13 +121,14 @@
     }
 
     async function carregarFinanceiro() {
-        const { data: boletos, error } = await supabaseCon.from('FINANCEIRO').select('*').order('vencimento', { ascending: true });
+        // Forçamos a seleção explícita das colunas para evitar erro de cache
+        const { data: boletos, error } = await supabaseCon.from('FINANCEIRO').select('id, cliente, valor, vencimento, status').order('vencimento', { ascending: true });
         if (error) return console.error(error.message);
 
         const tabela = document.getElementById('tabela-boletos');
         tabela.innerHTML = ""; 
 
-        let tHoje = 0, tMes = 0, tAno = 0;
+        let tHoje = 0, tAno = 0;
         const hojeIso = new Date().toISOString().split('T')[0];
 
         boletos.forEach(b => {
@@ -192,13 +193,17 @@
                 document.getElementById('f_vencimento').value = `${p[2]}-${p[1]}-${p[0]}`;
             }
 
+            // LIMPEZA DO NOME DO CLIENTE CORRIGIDA
             if (texto.includes("Pagador")) {
                 let partePagador = texto.split("Pagador")[1].trim();
-                if (partePagador.toUpperCase().includes("ANDREIS")) {
+                // Remove os cabeçalhos que apareceram no seu print
+                let nomeLimpo = partePagador.replace(/CPF|CNPJ|ENDERECO|CIDADE|UF|CEP|NOME|DO/gi, "").trim();
+                
+                if (nomeLimpo.toUpperCase().includes("ANDREIS")) {
                     document.getElementById('f_cliente').value = "ANDREIS TRANSPORTES";
                 } else {
-                    const nomeExtraido = partePagador.split(" ").slice(0, 4).join(" ");
-                    document.getElementById('f_cliente').value = nomeExtraido.replace(/[^a-zA-Z ]/g, "").replace("Nome", "").replace("do", "").trim().toUpperCase();
+                    const nomeExtraido = nomeLimpo.split(" ").slice(0, 4).join(" ");
+                    document.getElementById('f_cliente').value = nomeExtraido.replace(/[^a-zA-Z ]/g, "").trim().toUpperCase();
                 }
             } else {
                 const palavras = texto.split(" ");
@@ -215,9 +220,19 @@
         const v = document.getElementById('f_valor').value;
         const d = document.getElementById('f_vencimento').value;
 
-        const { error } = await supabaseCon.from('FINANCEIRO').insert([{ cliente: c, valor: parseFloat(v), vencimento: d, status: 'PENDENTE' }]);
-        if (error) alert("Erro: " + error.message);
-        else {
+        if(!c || !v || !d) return alert("Preencha todos os campos!");
+
+        const { error } = await supabaseCon.from('FINANCEIRO').insert([{ 
+            cliente: c, 
+            valor: parseFloat(v), 
+            vencimento: d, 
+            status: 'PENDENTE' 
+        }]);
+
+        if (error) {
+            console.error(error);
+            alert("Erro ao salvar: " + error.message);
+        } else {
             alert("Salvo com sucesso!");
             carregarFinanceiro();
             document.getElementById('f_cliente').value = "";
@@ -226,7 +241,6 @@
         }
     }
 
-    // MUDANÇA 2: FUNÇÕES DE VALES
     async function registrarVale() {
         const f = document.getElementById('v_funcionario').value.toUpperCase();
         const v = document.getElementById('v_valor_vale').value;
@@ -266,7 +280,6 @@
         }
     }
 
-    // MUDANÇA 3: CHAMADA INICIAL
     carregarFinanceiro();
     carregarVales();
 </script>
