@@ -3,8 +3,8 @@ async function entrar() {
     const user = document.getElementById('user').value.toUpperCase();
     const pass = document.getElementById('pass').value;
 
-    // Usando 'db' e a tabela MAIÚSCULA
-    const { data, error } = await db
+    // Buscando na tabela MAIÚSCULA usando a nova conexão
+    const { data, error } = await supabaseCon
         .from('USUARIOS') 
         .select('*')
         .eq('nome', user)
@@ -16,7 +16,6 @@ async function entrar() {
     } else {
         localStorage.setItem('usuario_logado', data.nome);
         localStorage.setItem('nivel_acesso', data.nivel);
-        
         alert("Bem-vindo(a), " + data.nome);
         window.location.href = "pages/dashboard.html"; 
     }
