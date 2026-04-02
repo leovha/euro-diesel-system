@@ -2,71 +2,108 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>EURO DIESEL | MASTER</title>
+    <title>EURO DIESEL | SISTEMA INTEGRADO</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../js/config.js"></script>
     <style>
         :root { --gold: #d4af37; --dark: #0b0b0b; --card: #1a1a1a; }
-        body { background: var(--dark); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; height: 100vh; }
+        body { background: var(--dark); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
         /* Menu Lateral */
-        .sidebar { width: 250px; background: var(--card); border-right: 2px solid var(--gold); display: flex; flex-direction: column; padding: 20px; }
-        .sidebar h2 { color: var(--gold); text-align: center; border-bottom: 1px solid var(--gold); padding-bottom: 10px; }
-        .nav-btn { background: none; border: 1px solid transparent; color: white; padding: 15px; text-align: left; cursor: pointer; margin-bottom: 5px; border-radius: 5px; }
-        .nav-btn:hover { border-color: var(--gold); background: #222; }
-        .nav-btn.active { background: var(--gold); color: black; font-weight: bold; }
+        .sidebar { width: 260px; background: var(--card); border-right: 2px solid var(--gold); display: flex; flex-direction: column; padding: 20px; }
+        .nav-btn { background: none; border: 1px solid transparent; color: #ccc; padding: 15px; text-align: left; cursor: pointer; margin-bottom: 10px; border-radius: 8px; font-weight: bold; }
+        .nav-btn:hover { border-color: var(--gold); color: var(--gold); }
+        .nav-btn.active { background: var(--gold); color: black; }
 
-        /* Área Central */
-        .main-content { flex: 1; padding: 40px; display: flex; flex-direction: column; align-items: center; }
-        .grid-financeiro { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; width: 100%; max-width: 1000px; }
-        .card { background: var(--card); border: 1px solid var(--gold); padding: 25px; border-radius: 10px; text-align: center; }
-        .card .valor { font-size: 28px; color: var(--gold); font-weight: bold; margin-top: 10px; }
+        /* Área dos Blocos */
+        .conteudo-principal { flex: 1; padding: 40px; overflow-y: auto; }
+        .bloco { display: none; animation: aparecer 0.4s ease; }
+        .bloco.ativo { display: block; }
         
-        .btn-sair { background: #ff4444; color: white; border: none; padding: 10px; cursor: pointer; margin-top: auto; border-radius: 5px; }
+        @keyframes aparecer { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Estilo para Tabelas e Inputs */
+        input, select { background: #222; border: 1px solid #444; color: white; padding: 10px; border-radius: 5px; margin-bottom: 10px; width: 100%; }
+        button.acao { background: var(--gold); border: none; padding: 12px; font-weight: bold; cursor: pointer; width: 100%; border-radius: 5px; }
     </style>
 </head>
 <body>
 
     <nav class="sidebar">
-        <h2>EURO DIESEL</h2>
-        <button class="nav-btn active">DASHBOARD</button>
-        <button class="nav-btn">LANÇAR BOLETOS</button>
-        <button class="nav-btn">VER RECEBÍVEIS</button>
-        <button class="btn-sair" onclick="localStorage.clear(); window.location.href='../index.html';">SAIR</button>
+        <h2 style="color: var(--gold); text-align: center;">EURO DIESEL</h2>
+        <button class="nav-btn active" onclick="mostrarBloco('dash', this)">DASHBOARD</button>
+        <button class="nav-btn" onclick="mostrarBloco('boletos', this)">LANÇAR BOLETOS</button>
+        <button class="nav-btn" onclick="mostrarBloco('vales', this)">VALES / COMISSÕES</button>
+        <button class="nav-btn" onclick="mostrarBloco('usuarios', this)">USUÁRIOS</button>
+        <button style="margin-top: auto; color: #ff4444;" class="nav-btn" onclick="sair()">SAIR</button>
     </nav>
 
-    <main class="main-content">
-        <h1>VARREDURA DE RECEBÍVEIS</h1>
-        <div class="grid-financeiro">
-            <div class="card"><h3>HOJE</h3><div id="v-hoje" class="valor">R$ 0,00</div></div>
-            <div class="card"><h3>ESTE MÊS</h3><div id="v-mes" class="valor">R$ 0,00</div></div>
-            <div class="card"><h3>PRÓX. 12 MESES</h3><div id="v-ano" class="valor">R$ 0,00</div></div>
+    <main class="conteudo-principal">
+        
+        <div id="dash" class="bloco ativo">
+            <h1>VARREDURA FINANCEIRA (12 MESES)</h1>
+            <div id="display-financeiro">Carregando dados...</div>
         </div>
+
+        <div id="boletos" class="bloco">
+            <h1>NOVO LANÇAMENTO DE BOLETO</h1>
+            <div style="max-width: 400px; background: var(--card); padding: 20px; border-radius: 10px;">
+                <input type="text" id="cliente" placeholder="Nome da Transportadora">
+                <input type="number" id="valor" placeholder="Valor (R$)">
+                <input type="date" id="vencimento">
+                <button class="acao" onclick="salvarBoleto()">CADASTRAR NO BANCO</button>
+            </div>
+        </div>
+
+        <div id="vales" class="bloco">
+            <h1>VALES E COMISSÕES</h1>
+            <p>Selecione o técnico para lançar o vale ou calcular a comissão.</p>
+            <select id="tecnico">
+                <option value="Manoel">Manoel (40%)</option>
+                <option value="Eduardo">Eduardo (35%)</option>
+                <option value="Vitor">Vitor (30%)</option>
+            </select>
+        </div>
+
+        <div id="usuarios" class="bloco">
+            <h1>GESTÃO DE ACESSO</h1>
+            <p>Usuários ativos no sistema:</p>
+            <div id="lista-usuarios"></div>
+        </div>
+
     </main>
 
     <script>
-        // Lógica para puxar os dados do Supabase
-        async function carregarDados() {
-            const { data: boletos } = await supabaseCon
+        // Função para trocar os blocos
+        function mostrarBloco(id, botao) {
+            document.querySelectorAll('.bloco').forEach(b => b.classList.remove('ativo'));
+            document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('active'));
+            
+            document.getElementById(id).classList.add('ativo');
+            botao.classList.add('active');
+        }
+
+        async function salvarBoleto() {
+            const cliente = document.getElementById('cliente').value;
+            const valor = document.getElementById('valor').value;
+            const vencimento = document.getElementById('vencimento').value;
+
+            const { error } = await supabaseCon
                 .from('FINANCEIRO')
-                .select('*')
-                .eq('status', 'PENDENTE');
+                .insert([{ cliente, valor, vencimento, status: 'PENDENTE' }]);
 
-            if (boletos) {
-                let hoje = 0, mes = 0, ano = 0;
-                const dataAtual = new Date().toISOString().split('T')[0];
-
-                boletos.forEach(b => {
-                    const val = parseFloat(b.valor);
-                    if (b.vencimento === dataAtual) hoje += val;
-                    ano += val; // Soma tudo para os 12 meses
-                });
-
-                document.getElementById('v-hoje').innerText = hoje.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'});
-                document.getElementById('v-ano').innerText = ano.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'});
+            if (!error) {
+                alert("Boleto lançado com sucesso!");
+                location.reload();
+            } else {
+                alert("Erro ao salvar: " + error.message);
             }
         }
-        carregarDados();
+
+        function sair() {
+            localStorage.clear();
+            window.location.href = '../index.html';
+        }
     </script>
 </body>
 </html>
