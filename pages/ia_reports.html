@@ -45,6 +45,66 @@
         async function gerarRelatorioIA() {
             alert("Iniciando varredura no banco de dados...");
         }
+        async function gerarRelatorioIA() {
+        const btn = document.querySelector('.btn-gerar');
+        btn.innerText = "PROCESSANDO...";
+        btn.disabled = true;
+
+        try {
+            // 1. BUSCAR BOLETOS PENDENTES NO SUPABASE
+            const { data: boletos, error: errB } = await supabaseCon
+                .from('FINANCEIRO')
+                .select('valor, vencimento')
+                .eq('status', 'PENDENTE');
+
+            if (errB) throw errB;
+
+            // 2. CALCULAR PREVISÃO E ALERTAS
+            let totalReceber = 0;
+            let atrasados = 0;
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0); // Ajusta para comparar apenas a data
+
+            boletos.forEach(b => {
+                const valor = parseFloat(b.valor) || 0;
+                totalReceber += valor;
+
+                // Converte a string de vencimento (AAAA-MM-DD) para objeto Date
+                const [ano, mes, dia] = b.vencimento.split('-');
+                const dataVenc = new Date(ano, mes - 1, dia);
+
+                if (dataVenc < hoje) {
+                    atrasados++;
+                }
+            });
+
+            // 3. ATUALIZAR A TELA COM OS DADOS REAIS
+            document.getElementById('ia-previsao').innerText = totalReceber.toLocaleString('pt-br', { 
+                style: 'currency', 
+                currency: 'BRL' 
+            });
+            
+            const campoAlerta = document.getElementById('ia-alertas');
+            const campoTexto = document.getElementById('ia-texto-analise');
+
+            if (atrasados > 0) {
+                campoAlerta.innerText = `${atrasados} BOLETOS VENCIDOS`;
+                campoAlerta.style.color = "#ff4444";
+                campoTexto.innerHTML = `<strong>INSIGHT IA:</strong> Identificamos ${atrasados} pendências atrasadas. Recomendamos priorizar a cobrança desses valores para não afetar o capital de giro da <strong>Euro Diesel</strong>.`;
+            } else {
+                campoAlerta.innerText = "TUDO EM DIA";
+                campoAlerta.style.color = "#28a745";
+                campoTexto.innerText = "Excelente! O fluxo de caixa está saudável e não há atrasos críticos detectados nos lançamentos atuais.";
+            }
+
+        } catch (error) {
+            console.error(error);
+            alert("Erro ao processar dados: " + error.message);
+        } finally {
+            btn.innerText = "PROCESSAR DADOS COM IA";
+            btn.disabled = false;
+        }
+    }
     </script>
 </body>
 </html>
