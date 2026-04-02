@@ -98,6 +98,41 @@
     </main>
 
     <script>
+    // ... funções trocarBloco, sair, carregarFinanceiro e registrarBoleto já estão aqui ...
+
+    // --- COLE A LÓGICA DE LEITURA ABAIXO DA registrarBoleto() ---
+
+    const pdfInput = document.getElementById('pdf_input');
+
+    pdfInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = async function() {
+            const typedarray = new Uint8Array(this.result);
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+            const pdf = await pdfjsLib.getDocument(typedarray).promise;
+            let textoCompleto = "";
+
+            for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const content = await page.getTextContent();
+                textoCompleto += content.items.map(item => item.str).join(" ");
+            }
+            processarTextoIA(textoCompleto);
+        };
+        reader.readAsArrayBuffer(file);
+    });
+
+    function processarTextoIA(texto) {
+        // ... (resto do código da função que extrai valor, data e cliente)
+        alert("IA Euro Diesel: Dados extraídos! Verifique antes de confirmar.");
+    }
+
+    // Inicia a varredura ao carregar
+    carregarFinanceiro();
+</script>
         // Configuração de Navegação
 function trocarBloco(id, botao) {
     document.querySelectorAll('.bloco').forEach(b => b.classList.remove('ativo'));
